@@ -40,7 +40,72 @@ hr {border-color:#344237!important;}
 .profile-initials {width:88px;height:88px;flex:0 0 88px;display:grid;place-items:center;border-radius:50%;border:1px solid #b49a61;background:#202c23;color:#e7c67f;font-family:Georgia,serif;font-size:31px;letter-spacing:1px;}
 .profile-head h2 {color:#f5e5ba;font-family:Georgia,serif;font-weight:500;font-size:clamp(24px,3vw,37px);margin:5px 0;}
 .profile-head p {color:#bbc7b9;margin:5px 0;font-size:15px;}
-.profile-interest {border:1px solid #435044;background:#172820;padding:13px 16px;border-radius:10px;color:#e7c67f;margin:6px 0;font-size:15px;}
+.profile-interest {display:flex;align-items:center;gap:12px;border:1px solid #435044;background:linear-gradient(90deg,#172820 0%,#183127 100%);padding:13px 16px;border-radius:10px;color:#f5e5ba;margin:6px 0;font-size:15px;}
+.profile-interest .icon {display:grid;place-items:center;width:24px;height:24px;border-radius:8px;background:#1f3228;color:#d8b974;font-size:14px;flex:0 0 24px;}
+.profile-interest .text {line-height:1.2;}
+/* Sidebar navigation: button cards with icon and descriptor. */
+[data-testid="stSidebar"] .st-key-nav_home button,
+[data-testid="stSidebar"] .st-key-nav_churn button,
+[data-testid="stSidebar"] .st-key-nav_reactivation button,
+[data-testid="stSidebar"] .st-key-nav_research button,
+[data-testid="stSidebar"] .st-key-nav_metrics button,
+[data-testid="stSidebar"] .st-key-nav_roadmap button {
+    display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;
+    background:transparent!important;border:1px solid transparent!important;border-radius:12px!important;
+    padding:10px 10px!important;min-height:64px!important;width:100%!important;
+    color:#f5e5ba!important;text-align:left!important;box-shadow:none!important;
+}
+[data-testid="stSidebar"] .st-key-nav_home button:hover,
+[data-testid="stSidebar"] .st-key-nav_churn button:hover,
+[data-testid="stSidebar"] .st-key-nav_reactivation button:hover,
+[data-testid="stSidebar"] .st-key-nav_research button:hover,
+[data-testid="stSidebar"] .st-key-nav_metrics button:hover,
+[data-testid="stSidebar"] .st-key-nav_roadmap button:hover {background:#172820!important;border-color:#74613a!important;}
+[data-testid="stSidebar"] .st-key-nav_home button::before,
+[data-testid="stSidebar"] .st-key-nav_churn button::before,
+[data-testid="stSidebar"] .st-key-nav_reactivation button::before,
+[data-testid="stSidebar"] .st-key-nav_research button::before,
+[data-testid="stSidebar"] .st-key-nav_metrics button::before,
+[data-testid="stSidebar"] .st-key-nav_roadmap button::before {
+    display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border-radius:10px;
+    border:1px solid #74613a;background:#203127;color:#e7c67f;font-size:15px;font-weight:600;
+}
+[data-testid="stSidebar"] .st-key-nav_home button::before {content:"✦";}
+[data-testid="stSidebar"] .st-key-nav_churn button::before {content:"🛡️";}
+[data-testid="stSidebar"] .st-key-nav_reactivation button::before {content:"↺";}
+[data-testid="stSidebar"] .st-key-nav_research button::before {content:"🔬";}
+[data-testid="stSidebar"] .st-key-nav_metrics button::before {content:"📊";}
+[data-testid="stSidebar"] .st-key-nav_roadmap button::before {content:"🗺️";}
+[data-testid="stSidebar"] .st-key-nav_home button::after,
+[data-testid="stSidebar"] .st-key-nav_churn button::after,
+[data-testid="stSidebar"] .st-key-nav_reactivation button::after,
+[data-testid="stSidebar"] .st-key-nav_research button::after,
+[data-testid="stSidebar"] .st-key-nav_metrics button::after,
+[data-testid="stSidebar"] .st-key-nav_roadmap button::after {content:"›";color:#d8b974;font-size:22px;line-height:1;margin-left:auto;flex:0 0 12px;}
+[data-testid="stSidebar"] .st-key-nav_home button [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] .st-key-nav_churn button [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] .st-key-nav_reactivation button [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] .st-key-nav_research button [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] .st-key-nav_metrics button [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] .st-key-nav_roadmap button [data-testid="stMarkdownContainer"] {flex:1;min-width:0;text-align:left;}
+[data-testid="stSidebar"] .st-key-nav_home button p,
+[data-testid="stSidebar"] .st-key-nav_churn button p,
+[data-testid="stSidebar"] .st-key-nav_reactivation button p,
+[data-testid="stSidebar"] .st-key-nav_research button p,
+[data-testid="stSidebar"] .st-key-nav_metrics button p,
+[data-testid="stSidebar"] .st-key-nav_roadmap button p {margin:0!important;text-align:left!important;font-size:14px!important;font-weight:600!important;line-height:1.2!important;color:#f5e5ba!important;}
+[data-testid="stSidebar"] .st-key-nav_home button p::after,
+[data-testid="stSidebar"] .st-key-nav_churn button p::after,
+[data-testid="stSidebar"] .st-key-nav_reactivation button p::after,
+[data-testid="stSidebar"] .st-key-nav_research button p::after,
+[data-testid="stSidebar"] .st-key-nav_metrics button p::after,
+[data-testid="stSidebar"] .st-key-nav_roadmap button p::after {display:block;color:#aab5a8;font-size:11px;font-weight:400;margin-top:3px;}
+[data-testid="stSidebar"] .st-key-nav_home button p::after {content:"Vista general del ciclo VIP";}
+[data-testid="stSidebar"] .st-key-nav_churn button p::after {content:"Retención y pérdida de nivel";}
+[data-testid="stSidebar"] .st-key-nav_reactivation button p::after {content:"Reingreso y oportunidad futura";}
+[data-testid="stSidebar"] .st-key-nav_research button p::after {content:"Perfiles y sensibilidad";}
+[data-testid="stSidebar"] .st-key-nav_metrics button p::after {content:"Métricas, límites y evidencia";}
+[data-testid="stSidebar"] .st-key-nav_roadmap button p::after {content:"Siguientes pasos del proyecto";}
 /* Team navigation: native buttons, styled as compact professional profile cards. */
 .st-key-team_footer .stButton>button {background:transparent!important;border:0!important;color:#e7c67f!important;box-shadow:none!important;text-decoration:underline;text-underline-offset:4px;padding:0!important;min-height:30px;justify-content:flex-start!important;font-weight:600!important;}
 .st-key-team_footer .stButton>button:hover {color:#fff3d0!important;}
@@ -101,6 +166,13 @@ TEAM_PROFILES = {
     }
 }
 
+INTEREST_ICONS = {
+    'Macroeconomía': '📈',
+    'Econometría': '🧮',
+    'Análisis de mercado': '🖼️',
+    'Estadística aplicada': '📊',
+}
+
 def open_team_profile(person):
     st.session_state['team_profile_active'] = person
 
@@ -109,10 +181,32 @@ def close_team_profile():
     st.session_state.pop('team_profile_active', None)
 
 
+NAV_ITEMS = [
+    ('Inicio · Ciclo de vida', 'nav_home'),
+    ('Churn Intelligence', 'nav_churn'),
+    ('Reactivation Intelligence', 'nav_reactivation'),
+    ('Research Lab · Ciclo VIP', 'nav_research'),
+    ('Evaluación y metodología', 'nav_metrics'),
+    ('Development Roadmap', 'nav_roadmap'),
+]
+if 'vip_main_navigation' not in st.session_state:
+    st.session_state['vip_main_navigation'] = NAV_ITEMS[0][0]
+
+active_nav_key = dict(NAV_ITEMS).get(st.session_state['vip_main_navigation'], 'nav_home')
+st.markdown(f'''<style>
+[data-testid="stSidebar"] .st-key-{active_nav_key} button {{background:linear-gradient(90deg,#1a3227 0%,#1a2d24 100%)!important;border-color:#74613a!important;box-shadow:0 0 0 1px rgba(216,185,116,.15) inset!important;}}
+[data-testid="stSidebar"] .st-key-{active_nav_key} button::before {{background:#2a3e31!important;}}
+</style>''',unsafe_allow_html=True)
+
 with st.sidebar:
     st.markdown('### ♠ VIP INTELLIGENCE')
     st.caption('MACHINE LEARNING / VIP LIFECYCLE')
-    section=st.radio('Navegación',['Inicio · Ciclo de vida','Churn Intelligence','Reactivation Intelligence','Research Lab · Ciclo VIP','Evaluación y metodología','Development Roadmap'],label_visibility='collapsed',key='vip_main_navigation',on_change=close_team_profile)
+    for label, nav_key in NAV_ITEMS:
+        with st.container(key=nav_key):
+            if st.button(label, key=f'btn_{nav_key}', use_container_width=True):
+                st.session_state['vip_main_navigation'] = label
+                close_team_profile()
+    section = st.session_state['vip_main_navigation']
     st.divider()
     st.caption('EQUIPO DE DESARROLLO')
     for person in ('daniel', 'julian'):
@@ -591,7 +685,8 @@ def team_profile_page(person):
         tile('Título profesional',profile['profession'],profile['university'])
         st.subheader('Áreas de interés')
         for interest in profile['interests']:
-            st.markdown(f'<div class="profile-interest">{html.escape(interest)}</div>',unsafe_allow_html=True)
+            icon = INTEREST_ICONS.get(interest, '•')
+            st.markdown(f'<div class="profile-interest"><span class="icon">{html.escape(icon)}</span><span class="text">{html.escape(interest)}</span></div>',unsafe_allow_html=True)
     st.divider()
     st.caption('VIP Intelligence integra perspectivas de economía, estadística y ciencia de datos para estudiar el ciclo de vida del segmento VIP.')
     other = 'julian' if person == 'daniel' else 'daniel'
