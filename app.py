@@ -60,13 +60,82 @@ hero(section)
 GROUPS={
 'churn': [('Perfil VIP y contexto',['nivel_vip','antiguedad_meses','venia_prev','cambio_nivel','mes_mundial','perfilado']),('Actividad del mes',['dias_activos_mes','recencia_fin_mes','tickets_mes','spins_mes','apuesta_dep_mes','apuesta_casino_mes']),('Valor económico y bonos',['deposito_mes','retiro_mes','ggr_dep_mes','ggr_slot_mes','ggr_live_mes','ggr_virt_mes','bono_total_mes','usa_bono_mes']),('Cambios frente al mes anterior',['delta_dias_activos','delta_deposito','delta_ggr'])],
 'reactivacion':[('Historial y ausencia VIP',['meses_fuera_vip','ultimo_nivel_vip','nivel_vip_max_historico','meses_vip_historicos','racha_vip_previa','reactivaciones_previas','cambio_nivel_ultimo_mes']),('Actividad del último mes VIP',['dias_activos_ultimo_mes','recencia_fin_ultimo_mes','tickets_ultimo_mes','spins_ultimo_mes','apuesta_total_ultimo_mes']),('Valor económico del último mes VIP',['deposito_ultimo_mes','retiro_ultimo_mes','ggr_general_ultimo_mes','bono_total_ultimo_mes']),('Historial agregado',['deposito_promedio_historico','ggr_promedio_historico','apuesta_promedio_historico','bono_promedio_historico','dias_activos_promedio_historico']),('Cambios antes de la salida',['delta_dias_activos_ultimo_mes','delta_deposito_ultimo_mes','delta_ggr_ultimo_mes'])]}
-LABELS={'venia_prev':'¿Era VIP el mes anterior?','mes_mundial':'¿Mes de Mundial (junio/julio 2026)?','perfilado':'Perfil histórico de producto','usa_bono_mes':'¿Uso de bono?','recencia_fin_mes':'Días desde la última actividad al cierre','recencia_fin_ultimo_mes':'Recencia al cierre del último mes VIP','antiguedad_meses':'Antigüedad VIP (meses)','nivel_vip_max_historico':'Nivel VIP máximo observado','meses_vip_historicos':'Meses observados como VIP','racha_vip_previa':'Racha VIP consecutiva previa','reactivaciones_previas':'Reingresos VIP previos','cambio_nivel_ultimo_mes':'Cambio de nivel en el último mes VIP','ggr_dep_mes':'GGR deportivas','ggr_slot_mes':'GGR slots','ggr_live_mes':'GGR casino en vivo','ggr_virt_mes':'GGR virtuales','apuesta_dep_mes':'Apuesta deportivas','apuesta_casino_mes':'Apuesta casino'}
+LABELS = {
+    'nivel_vip': 'Nivel VIP',
+    'antiguedad_meses': 'Antigüedad VIP (meses)',
+    'venia_prev': '¿Era VIP el mes anterior?',
+    'cambio_nivel': 'Cambio de nivel VIP',
+    'mes_mundial': '¿Mes del Mundial (junio/julio de 2026)?',
+    'perfilado': 'Perfil histórico de producto',
+    'dias_activos_mes': 'Días activos del mes',
+    'recencia_fin_mes': 'Días desde la última actividad al cierre',
+    'tickets_mes': 'Tickets del mes',
+    'spins_mes': 'Spins del mes',
+    'apuesta_dep_mes': 'Apuestas deportivas del mes',
+    'apuesta_casino_mes': 'Apuestas de casino del mes',
+    'deposito_mes': 'Depósitos del mes',
+    'retiro_mes': 'Retiros del mes',
+    'ggr_dep_mes': 'GGR deportivas',
+    'ggr_slot_mes': 'GGR slots',
+    'ggr_live_mes': 'GGR casino en vivo',
+    'ggr_virt_mes': 'GGR virtuales',
+    'bono_total_mes': 'Bonos del mes',
+    'usa_bono_mes': '¿Usó bonos en el mes?',
+    'delta_dias_activos': 'Variación de días activos',
+    'delta_deposito': 'Variación de depósitos',
+    'delta_ggr': 'Variación de GGR',
+    'meses_fuera_vip': 'Meses fuera del segmento VIP',
+    'ultimo_nivel_vip': 'Último nivel VIP',
+    'nivel_vip_max_historico': 'Nivel VIP máximo observado',
+    'meses_vip_historicos': 'Meses observados como VIP',
+    'racha_vip_previa': 'Racha VIP consecutiva previa',
+    'reactivaciones_previas': 'Reingresos VIP previos',
+    'cambio_nivel_ultimo_mes': 'Cambio de nivel en el último mes VIP',
+    'dias_activos_ultimo_mes': 'Días activos del último mes VIP',
+    'recencia_fin_ultimo_mes': 'Recencia al cierre del último mes VIP',
+    'tickets_ultimo_mes': 'Tickets del último mes VIP',
+    'spins_ultimo_mes': 'Spins del último mes VIP',
+    'apuesta_total_ultimo_mes': 'Apuestas del último mes VIP',
+    'deposito_ultimo_mes': 'Depósitos del último mes VIP',
+    'retiro_ultimo_mes': 'Retiros del último mes VIP',
+    'ggr_general_ultimo_mes': 'GGR del último mes VIP',
+    'bono_total_ultimo_mes': 'Bonos del último mes VIP',
+    'deposito_promedio_historico': 'Promedio histórico de depósitos',
+    'ggr_promedio_historico': 'Promedio histórico de GGR',
+    'apuesta_promedio_historico': 'Promedio histórico de apuestas',
+    'bono_promedio_historico': 'Promedio histórico de bonos',
+    'dias_activos_promedio_historico': 'Promedio histórico de días activos',
+    'delta_dias_activos_ultimo_mes': 'Variación previa de días activos',
+    'delta_deposito_ultimo_mes': 'Variación previa de depósitos',
+    'delta_ggr_ultimo_mes': 'Variación previa de GGR',
+}
+
+# Display order and captions only; inference retains the original category values.
+VIP_FIELDS = {'nivel_vip', 'ultimo_nivel_vip', 'nivel_vip_max_historico'}
+VIP_ORDER = ('bronce', 'plata', 'oro', 'diamante')
+CATEGORY_LABELS = {
+    'bronce': '🥉 Bronce', 'plata': '🥈 Plata', 'oro': '🥇 Oro', 'diamante': '💎 Diamante',
+    'si': 'Sí', 'no': 'No', 'ascendio': 'Ascendió', 'descendio': 'Descendió',
+    'se_mantuvo': 'Se mantuvo', 'no_aplica': 'No aplica',
+}
+
+def display_category(value):
+    return CATEGORY_LABELS.get(value, str(value))
+
+def display_options(name, categories):
+    options = list(categories)
+    if name in VIP_FIELDS:
+        # Preserve the estimator's available categories, even if new ones appear.
+        return [v for v in VIP_ORDER if v in options] + [v for v in options if v not in VIP_ORDER]
+    return options
+
 COUNTS={'antiguedad_meses','dias_activos_mes','recencia_fin_mes','tickets_mes','spins_mes','delta_dias_activos','meses_fuera_vip','meses_vip_historicos','racha_vip_previa','reactivaciones_previas','dias_activos_ultimo_mes','recencia_fin_ultimo_mes','tickets_ultimo_mes','spins_ultimo_mes','delta_dias_activos_ultimo_mes'}
 
 def field(kind,name,bundle):
     d=DEFAULTS[kind][name]; key=f'{kind}_{name}'; label=LABELS.get(name,name.replace('_',' ').capitalize()); cats=get_categories(kind,bundle)
     if name in cats:
-        opts=cats[name]; return st.selectbox(label,opts,index=opts.index(d),key=key)
+        opts = display_options(name, cats[name])
+        return st.selectbox(label, opts, index=opts.index(d), key=key, format_func=display_category)
     if name in COUNTS:
         low=-31 if name.startswith('delta_') else (1 if name in {'antiguedad_meses','meses_fuera_vip','meses_vip_historicos','racha_vip_previa','dias_activos_mes','dias_activos_ultimo_mes'} else 0)
         upper=31 if 'dias_activos' in name or 'recencia' in name else (9 if name in {'antiguedad_meses','meses_vip_historicos','racha_vip_previa','reactivaciones_previas'} else (7 if name=='meses_fuera_vip' else None))
