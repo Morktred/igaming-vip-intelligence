@@ -1,0 +1,27 @@
+# Confidential data
+*.csv
+*.arff
+*.xlsx
+*.xls
+*.parquet
+*.ipynb
+*.docx
+*.pdf
+data/
+datasets/
+
+# Credentials and secrets
+.env
+.env.*
+.streamlit/secrets.toml
+
+# Python environment
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local files
+.DS_Store
+Thumbs.db
+*.zip
