@@ -1,3 +1,5 @@
+# VIP Intelligence | Responsables de los análisis: Julián Vega Castellón (churn) y Edwin Daniel Holguín Ángel (reactivación).
+# Coordinación del despliegue: Daniel Holguin. Interfaz con asistencia de IA.
 import json
 from pathlib import Path
 import html
@@ -33,7 +35,7 @@ st.markdown('''<style>
 [data-testid="stExpander"] {border-color:#3b493d;}
 .stButton>button,.stFormSubmitButton>button {border:1px solid #d7b66f!important;background:#d7b66f!important;color:#101710!important;font-weight:700!important;border-radius:9px!important;}
 hr {border-color:#344237!important;}
-.footer {color:#aab5a8;font-size:11px;border-top:1px solid #3c493e;margin-top:32px;padding-top:14px;letter-spacing:.4px;}
+.life {display:flex;align-items:stretch;gap:12px;flex-wrap:wrap;margin:14px 0;} .node {flex:1;min-width:140px;border:1px solid #74613a;background:#172820;border-radius:14px;padding:20px;text-align:center;} .node strong {font-family:Georgia,serif;font-size:24px;color:#e7c67f;} .node p {font-size:12px;color:#bbc7b9;margin:8px 0 0;} .arrow {align-self:center;color:#d8b974;font-size:20px;text-align:center;} .arrow small {display:block;font-size:10px;} .research {border:1px solid #74613a;border-radius:14px;padding:22px;background:linear-gradient(110deg,#172e24,#1e251a);margin:12px 0 20px;} .research h3 {color:#e7c67f;margin:4px 0;} .research p {color:#bbc7b9;margin:8px 0;} .footer {color:#aab5a8;font-size:11px;border-top:1px solid #3c493e;margin-top:32px;padding-top:14px;letter-spacing:.4px;}
 </style>''',unsafe_allow_html=True)
 
 @st.cache_resource
@@ -47,8 +49,8 @@ def hero(section):
 
 with st.sidebar:
     st.markdown('### ♠ VIP INTELLIGENCE')
-    st.caption('MACHINE LEARNING / VIP ANALYTICS')
-    section=st.radio('Navegación',['Inicio','Churn VIP','Reactivación VIP','Ranking de reactivación','Metodología y métricas'],label_visibility='collapsed')
+    st.caption('MACHINE LEARNING / VIP LIFECYCLE')
+    section=st.radio('Navegación',['Inicio · Ciclo de vida','Churn Intelligence','Reactivation Intelligence','Reactivation Research Lab','Evaluación y metodología','Development Roadmap'],label_visibility='collapsed')
     st.divider()
     st.caption('EQUIPO DE DESARROLLO')
     st.markdown('**Daniel Holguin** · Reactivación VIP')
@@ -398,41 +400,84 @@ def ranking_page():
     st.info('AP = 0,193 frente a prevalencia 0,0921 (2,09 veces). Brier = 0,0864 frente a referencia constante 0,0842: la calibración no está demostrada. El ranking describe asociación retrospectiva; no prueba causalidad, incremento de ingresos ni utilidad prospectiva.')
     st.caption('Fuente: resultados agregados de la evaluación de agosto. No se incluyen registros, scores individuales ni identificadores.')
 
+def research_page():
+    st.markdown('''<div class="research"><div class="eyebrow">RESEARCH &amp; DEVELOPMENT · LÍNEA PRIORITARIA</div><h3>♦ Reactivation Research Lab</h3><p>Comprender los patrones de reingreso al segmento VIP con información histórica limitada es una línea de investigación propia. La evidencia de ordenamiento justifica estudiar su potencial, no afirmar que esté listo para producción.</p></div>''',unsafe_allow_html=True)
+    a,b,c,d=st.columns(4)
+    with a: tile('Lift · Top 5 %','3,06x','Concentración retrospectiva')
+    with b: tile('AP frente a referencia','2,09x','0,193 frente a 0,0921')
+    with c: tile('Base analítica','9.331','Observaciones usuario–mes')
+    with d: tile('Experimentación','15','Configuraciones evaluadas')
+    st.write('En agosto, el reingreso tuvo una prevalencia de 9,21 %. El 5 % superior contiene 33 eventos de 117 registros (28,21 %), frente a 10,8 esperados al azar. Se muestran todas las fracciones, no solo la de mayor lift.')
+    ranking_page()
+    st.subheader('Qué sabemos y qué falta demostrar')
+    st.write('El modelo presenta una señal retrospectiva de ordenamiento, pero su precisión individual es 17,32 %, su recall 43,46 % y su ROC-AUC 0,675. El Brier de 0,0864 no mejora la referencia constante de 0,0842. El ranking no implica calibración ni eficacia de intervenciones.')
+    st.subheader('Agenda de investigación')
+    st.write('Ampliar el histórico, evaluar nuevas fuentes autorizadas, estudiar el tiempo hasta reingreso con métodos de supervivencia, comprobar disponibilidad temporal de variables y validar en meses nuevos. Todo enriquecimiento requiere controles de privacidad y juego responsable.')
+
+
 def metrics_page():
     c=json.loads((ROOT/'metricas_churn.json').read_text()); r=json.loads((ROOT/'metricas_reactivacion.json').read_text())['test_retrospectivo']
-    st.markdown('#### Evidencia de evaluación')
-    left,right=st.columns(2)
-    for col,title,roc,ap,prec,rec,f1,note in [(left,'Churn VIP',c['roc_auc'],c['ap'],c['precision'],c['recall'],c['f1'],'Septiembre · reproducción compatible; evaluación retrospectiva'),(right,'Reactivación VIP',r['ROC-AUC'],r['AP'],r['Precisión'],r['Recall'],r['F1'],'Agosto · evaluación retrospectiva')]:
-        with col:
-            st.subheader(title); st.caption(note)
-            a,b=st.columns(2)
-            with a: tile('ROC-AUC',f'{roc:.3f}','Discriminación')
-            with b: tile('Average Precision',f'{ap:.3f}','Resumen precisión-recall')
-            a,b,d=st.columns(3)
-            with a: st.metric('Precisión',f'{prec:.1%}')
-            with b: st.metric('Recall',f'{rec:.1%}')
-            with d: st.metric('F1',f'{f1:.3f}')
+    st.subheader('Evaluación de dos transiciones complementarias')
+    st.write('Cada modelo responde a una pregunta distinta. Las métricas se interpretan dentro de su población y prevalencia; no constituyen una competencia entre modelos.')
+    tc,tr=st.tabs(['♠ Churn Intelligence','♦ Reactivation Intelligence'])
+    with tc:
+        st.caption('Septiembre · reproducción compatible · evaluación retrospectiva · prevalencia 41,07 %')
+        a,b,d=st.columns(3)
+        with a: tile('Recall',f"{c['recall']:.1%}",'Cobertura de pérdidas VIP observadas')
+        with b: tile('ROC-AUC',f"{c['roc_auc']:.3f}",'Discriminación')
+        with d: tile('Average Precision',f"{c['ap']:.3f}",'Referencia aleatoria: 0,4107')
+        a,b=st.columns(2)
+        with a: st.metric('Precisión',f"{c['precision']:.1%}")
+        with b: st.metric('F1',f"{c['f1']:.3f}")
+        st.write('La cobertura es alta en esta evaluación, pero existen falsos positivos y falta confirmar la disponibilidad temporal de perfilado.')
+    with tr:
+        st.caption('Agosto · evaluación retrospectiva · prevalencia 9,21 %')
+        a,b,d=st.columns(3)
+        with a: tile('Lift · Top 10 %','2,70x','Concentración de reingresos observados')
+        with b: tile('ROC-AUC',f"{r['ROC-AUC']:.3f}",'Discriminación')
+        with d: tile('Average Precision',f"{r['AP']:.3f}",'Referencia aleatoria: 0,0921')
+        a,b,d=st.columns(3)
+        with a: st.metric('Precisión',f"{r['Precisión']:.1%}")
+        with b: st.metric('Recall',f"{r['Recall']:.1%}")
+        with d: st.metric('F1',f"{r['F1']:.3f}")
+        st.write('El ranking complementa la clasificación binaria, no la reemplaza. La calibración no está demostrada. Research Lab desarrolla la evidencia completa.')
     st.divider()
-    ranking_page()
-    st.divider()
-    st.markdown('#### Alcance metodológico')
-    st.write('Churn: clasificación a nivel usuario–mes. Votación soft con LR, MLP y Gradient Boosting; SMOTENC durante el entrenamiento. Reactivación: regresión logística sin sobremuestreo; la población son antiguos VIP ausentes en M. Los modelos no comparten población ni etiqueta.')
-    st.write('El modelo de churn se reentrenó con los hiperparámetros y el umbral originales en scikit-learn 1.8.0 para compatibilidad con el modelo de reactivación. El artefacto de inferencia no conserva el remuestreador SMOTENC ajustado. Las métricas de churn corresponden a la reproducción con enero–agosto y evaluación en septiembre; la versión de despliegue se ajustó con enero–septiembre.')
-    st.write('Reactivación se conserva como se exportó en su notebook: entrenamiento febrero–junio, validación julio, prueba retrospectiva agosto. Las métricas no son directamente comparables porque las prevalencias difieren.')
-    st.warning('Limitaciones: origen temporal de perfilado pendiente de confirmar en churn; evaluación de agosto ya consultada; calibración no demostrada; histórico limitado; poca evidencia en niveles Oro y Diamante. Demostración técnica, no sistema operativo validado.')
-    st.markdown('**Privacidad y juego responsable:** no contiene registros de jugadores ni identificadores; no ofrece apuestas, incentivos personalizados ni recomendaciones de contacto. Los modelos requieren autorización del titular de los datos antes de publicarse.')
+    st.subheader('Alcance metodológico')
+    st.write('Churn: votación soft con LR, MLP y Gradient Boosting; SMOTENC durante entrenamiento. Reactivación: regresión logística sin sobremuestreo; antiguos VIP ausentes en M. Ambos estudian calificación VIP en M+1, no abandono o retorno al juego.')
+    st.write('Churn se reprodujo con hiperparámetros y umbral originales en scikit-learn 1.8.0. Las métricas corresponden a entrenamiento enero–agosto y evaluación septiembre; el artefacto desplegado se ajustó con enero–septiembre y no conserva el remuestreador ajustado. Reactivación conserva el modelo del notebook: entrenamiento febrero–junio, validación julio y evaluación retrospectiva agosto.')
+    st.warning('Limitaciones: origen temporal de perfilado pendiente en churn; agosto ya consultado; calibración no demostrada; histórico limitado; poca evidencia en Oro y Diamante. No es un sistema operativo validado.')
+    st.markdown('**Privacidad y juego responsable:** perfiles ficticios, sin registros individuales ni recomendaciones de contacto o incentivos. Los artefactos requieren autorización del titular de los datos.')
 
-if section=='Inicio':
+
+def roadmap_page():
+    st.subheader('Development Roadmap')
+    st.caption('Propuestas de evolución, no compromisos ni funcionalidades productivas.')
+    stages=[('V1.0 · Fundamentos predictivos','Implementado en código','Dos análisis supervisados, validación temporal y prototipo web.'),('V1.1 · Experimentación y explicabilidad','Implementado en código','Predicción manual, perfiles sintéticos, sensibilidad local y ranking histórico.'),('V2.0 · Reactivation Research Lab','Investigación propuesta','Ampliar el horizonte histórico y evaluar fuentes autorizadas; estudiar estabilidad de la señal de reingreso.'),('V2.1 · Time-to-event Analytics','Investigación propuesta','Analizar tiempo hasta pérdida o reingreso VIP mediante métodos de supervivencia y censura.'),('V3.0 · Model Reliability','Investigación propuesta','Validación prospectiva, calibración, drift, privacidad y juego responsable.')]
+    for title,status,desc in stages:
+        st.markdown(f'<div class="tile"><small>{html.escape(status)}</small><div class="value" style="font-size:23px">{html.escape(title)}</div><p>{html.escape(desc)}</p></div>',unsafe_allow_html=True)
+    st.caption('La agenda de investigación es futura; el módulo informativo está incluido en esta versión. La última interfaz requiere verificación en Streamlit Cloud.')
+
+
+def home_page():
+    st.subheader('VIP Lifecycle Intelligence')
+    st.write('Dos modelos complementarios estudian el ciclo de vida VIP: la transición de presencia a ausencia y la transición de ausencia a reingreso. No compiten por el mismo objetivo.')
+    st.markdown('''<div class="life"><div class="node"><strong>♠ VIP activo</strong><p>Calificación observada en M</p></div><div class="arrow">→<small>Churn</small></div><div class="node"><strong>◇ Fuera del segmento</strong><p>Ausencia de calificación VIP</p></div><div class="arrow">→<small>Reactivación</small></div><div class="node"><strong>♦ Reingreso VIP</strong><p>Recalificación observada</p></div></div>''',unsafe_allow_html=True)
+    st.caption('Esquema conceptual de estados observables. Estar fuera del segmento no significa haber dejado de jugar.')
     a,b=st.columns(2)
-    with a: tile('♠ Análisis 01','Churn VIP','Estima pérdida de calificación VIP al mes siguiente.')
-    with b: tile('♦ Análisis 02','Reactivación VIP','Estudia el reingreso al segmento VIP y su ordenamiento retrospectivo.')
-    st.markdown('#### Dos poblaciones, dos preguntas analíticas')
-    st.write('Elige un análisis en el menú lateral. Cada módulo ofrece predicción manual, comparación de tres perfiles sintéticos completos y análisis de sensibilidad de una variable a la vez; todos calculan scores con el estimador entrenado. La sección de ranking permite explorar la concentración retrospectiva de reingresos. La metodología conserva las métricas completas y sus limitaciones.')
-    st.markdown('#### Ciclo del análisis')
-    st.markdown('**Histórico VIP**  →  **Preparación usuario–mes**  →  **Modelo de clasificación**  →  **Score y umbral**  →  **Evaluación del modelo**')
-    st.info('Este prototipo no es una plataforma de apuestas y no contiene datos de usuarios reales.')
-elif section=='Churn VIP': page_model('churn')
-elif section=='Reactivación VIP': page_model('reactivacion')
-elif section=='Ranking de reactivación': ranking_page()
+    with a: tile('♠ Línea analítica 01','Churn Intelligence','Votación soft · detección de pérdida VIP')
+    with b: tile('♦ Línea analítica 02','Reactivation Intelligence','Regresión logística · reingreso y ordenamiento')
+    st.markdown('''<div class="research"><div class="eyebrow">FOCO DE INVESTIGACIÓN</div><h3>Reactivation Research Lab</h3><p>La señal de concentración de reingresos, pese a la información limitada durante la ausencia, abre una línea de investigación: ampliar la fuente, estudiar la duración de ausencia y comprobar la fiabilidad en meses nuevos.</p></div>''',unsafe_allow_html=True)
+    a,b,c=st.columns(3)
+    with a: tile('Referencia de reingreso','9,21 %','Prevalencia en agosto')
+    with b: tile('Tasa en Top 5 %','28,21 %','33 eventos en 117 registros')
+    with c: tile('Lift · Top 5 %','3,06x','Evidencia retrospectiva, no causal')
+    st.write('Explora ambos modelos mediante predicción manual, perfiles ficticios completos y sensibilidad. Research Lab contiene el ranking y la agenda de investigación; Evaluación y metodología conserva todas las métricas y limitaciones.')
+    st.info('Prototipo de investigación, no plataforma de apuestas. Scores no calibrados; no ingresar información confidencial ni utilizar para decisiones sobre personas.')
+
+if section=='Inicio · Ciclo de vida': home_page()
+elif section=='Churn Intelligence': page_model('churn')
+elif section=='Reactivation Intelligence': page_model('reactivacion')
+elif section=='Reactivation Research Lab': research_page()
+elif section=='Development Roadmap': roadmap_page()
 else: metrics_page()
 st.markdown('<div class="footer">VIP INTELLIGENCE · DANIEL HOLGUIN &amp; JULIÁN VEGA · MACHINE LEARNING</div>',unsafe_allow_html=True)
