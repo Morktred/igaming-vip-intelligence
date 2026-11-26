@@ -138,6 +138,21 @@ hr {border-color:#344237!important;}
     [data-testid="stSidebar"] .vip-side-divider {margin:4px 0 2px;}
     [data-testid="stSidebar"] .vip-side-subtitle {margin-bottom:3px;}
 }
+/* Preserve the natural height of sidebar labels: compact spacing must never clip text. */
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"],
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"],
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > [data-testid="stLayoutWrapper"] {flex-shrink:0!important;}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {overflow:visible!important;}
+[data-testid="stSidebar"] .vip-side-heading {display:flex;flex-direction:column;gap:4px;padding-bottom:1px;}
+[data-testid="stSidebar"] .vip-side-heading .vip-side-subtitle {margin:0;padding:0 4px;}
+[data-testid="stSidebar"] .vip-side-label {display:block;box-sizing:border-box;min-height:19px;line-height:14px;padding:2px 4px 3px;margin:0;white-space:normal;overflow:visible;}
+[data-testid="stSidebar"] .vip-side-divider {margin:5px 0 2px;}
+[data-testid="stSidebar"] .vip-side-note {overflow-wrap:anywhere;}
+@media (max-height: 700px) {
+    [data-testid="stSidebar"] .vip-side-heading {gap:3px;}
+    [data-testid="stSidebar"] .vip-side-label {min-height:17px;line-height:13px;padding:1px 4px 3px;}
+    [data-testid="stSidebar"] .vip-side-divider {margin:3px 0 1px;}
+}
 /* Do not hide overflow: on very small screens users must still reach all controls. */
 </style>''',unsafe_allow_html=True)
 
@@ -208,14 +223,16 @@ if active_person in TEAM_PROFILES:
     st.markdown(f'''<style>[data-testid="stSidebar"] .st-key-team_card_{active_person} button {{background:#1b2c24!important;border-color:#74613a!important;}}</style>''', unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown('<div class="vip-side-brand">♠ VIP INTELLIGENCE</div><div class="vip-side-subtitle">MACHINE LEARNING / VIP LIFECYCLE</div><div class="vip-side-label">NAVEGACIÓN</div>', unsafe_allow_html=True)
+    st.markdown('<div class="vip-side-heading"><div class="vip-side-brand">♠ VIP INTELLIGENCE</div><div class="vip-side-subtitle">MACHINE LEARNING / VIP LIFECYCLE</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="vip-side-label">NAVEGACIÓN</div>', unsafe_allow_html=True)
     for label, nav_key in NAV_ITEMS:
         selected = label == section and active_person not in TEAM_PROFILES
         # Keep widget keys stable even when the selected style changes.
         with st.container(key=f'vipnav_{nav_key}_{"selected" if selected else "idle"}'):
             st.button(label, key=f'vipnav_button_{nav_key}', use_container_width=True,
                       on_click=select_main_page, args=(label,))
-    st.markdown('<div class="vip-side-divider"></div><div class="vip-side-label">EQUIPO DE DESARROLLO</div>', unsafe_allow_html=True)
+    st.markdown('<div class="vip-side-divider"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="vip-side-label">EQUIPO DE DESARROLLO</div>', unsafe_allow_html=True)
     for person in ('daniel', 'julian'):
         member = TEAM_PROFILES[person]
         with st.container(key=f'team_card_{person}'):
