@@ -104,56 +104,26 @@ hr {border-color:#344237!important;}
 [data-testid="stSidebar"] .st-key-team_card_daniel button p::after {content:"Economista";}
 [data-testid="stSidebar"] .st-key-team_card_julian button p::after {content:"Estadístico";}
 
-/* Compact sidebar: keep every destination accessible without a second scroll on typical desktop screens. */
-[data-testid="stSidebar"] [data-testid="stSidebarContent"] {padding-bottom:0!important;}
-[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {padding-top:0.65rem!important;padding-bottom:0.5rem!important;}
-[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {gap:0.25rem!important;}
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {margin:0!important;}
-[data-testid="stSidebar"] .vip-side-brand {font-weight:700;font-size:15px;color:#f5e5ba;line-height:1.3;padding:0 4px;margin:0;}
-[data-testid="stSidebar"] .vip-side-subtitle {font-size:10px;letter-spacing:.35px;color:#a49f86;margin:4px 0 8px;padding:0 4px;line-height:1.3;}
-[data-testid="stSidebar"] .vip-side-label {font-size:10px;font-weight:600;letter-spacing:1px;color:#a49f86;padding:5px 4px 3px;line-height:1.2;}
-[data-testid="stSidebar"] .vip-side-divider {height:1px;background:#39473d;margin:7px 0 3px;}
-[data-testid="stSidebar"] .vip-side-note {font-size:10px;color:#aab5a8;line-height:1.4;padding:3px 4px;margin:0;}
-[data-testid="stSidebar"] [class*="st-key-vipnav_"] button {min-height:35px!important;padding:5px 8px!important;gap:10px!important;}
+/* Compact sidebar: let Streamlit manage the layout and its natural element heights.
+   Do not override stVerticalBlock gap, flex-shrink, or markdown overflow. */
+[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {padding-top:0.85rem!important;padding-bottom:0.6rem!important;}
+[data-testid="stSidebar"] [class*="st-key-vipnav_"] button {min-height:36px!important;padding:5px 8px!important;gap:10px!important;}
 [data-testid="stSidebar"] [class*="st-key-vipnav_"] button::before {width:17px;height:17px;flex:0 0 17px;}
-[data-testid="stSidebar"] [class*="st-key-vipnav_"] button p {font-size:13px!important;line-height:1.25!important;}
-[data-testid="stSidebar"] [class*="st-key-vipnav_"] button [data-testid="stMarkdownContainer"],
-[data-testid="stSidebar"] .st-key-team_card_daniel button [data-testid="stMarkdownContainer"],
-[data-testid="stSidebar"] .st-key-team_card_julian button [data-testid="stMarkdownContainer"] {display:flex!important;flex:1 1 0!important;justify-content:flex-start!important;align-items:flex-start!important;text-align:left!important;min-width:0!important;}
-[data-testid="stSidebar"] [class*="st-key-vipnav_"] button [data-testid="stMarkdownContainer"] p,
-[data-testid="stSidebar"] .st-key-team_card_daniel button [data-testid="stMarkdownContainer"] p,
-[data-testid="stSidebar"] .st-key-team_card_julian button [data-testid="stMarkdownContainer"] p {width:100%!important;text-align:left!important;}
+[data-testid="stSidebar"] [class*="st-key-vipnav_"] button p {font-size:13px!important;line-height:1.35!important;}
 [data-testid="stSidebar"] .st-key-team_card_daniel button,
-[data-testid="stSidebar"] .st-key-team_card_julian button {min-height:45px!important;padding:5px 7px!important;gap:9px!important;}
+[data-testid="stSidebar"] .st-key-team_card_julian button {min-height:47px!important;padding:5px 7px!important;gap:9px!important;}
 [data-testid="stSidebar"] .st-key-team_card_daniel button::before,
 [data-testid="stSidebar"] .st-key-team_card_julian button::before {width:32px;height:32px;flex:0 0 32px;font-size:11px;}
 [data-testid="stSidebar"] .st-key-team_card_daniel button p,
-[data-testid="stSidebar"] .st-key-team_card_julian button p {font-size:13px!important;line-height:1.25!important;}
+[data-testid="stSidebar"] .st-key-team_card_julian button p {font-size:13px!important;line-height:1.35!important;}
 [data-testid="stSidebar"] .st-key-team_card_daniel button p::after,
-[data-testid="stSidebar"] .st-key-team_card_julian button p::after {font-size:11px;margin-top:1px;}
-@media (max-height: 700px) {
-    [data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {padding-top:0.25rem!important;padding-bottom:0.25rem!important;}
-    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {gap:0.125rem!important;}
-    [data-testid="stSidebar"] [class*="st-key-vipnav_"] button {min-height:30px!important;padding:4px 8px!important;}
-    [data-testid="stSidebar"] .vip-side-divider {margin:4px 0 2px;}
-    [data-testid="stSidebar"] .vip-side-subtitle {margin-bottom:3px;}
-}
-/* Preserve the natural height of sidebar labels: compact spacing must never clip text. */
-[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"],
-[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"],
-[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > [data-testid="stLayoutWrapper"] {flex-shrink:0!important;}
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {overflow:visible!important;}
-[data-testid="stSidebar"] .vip-side-heading {display:flex;flex-direction:column;gap:4px;padding-bottom:1px;}
-[data-testid="stSidebar"] .vip-side-heading .vip-side-subtitle {margin:0;padding:0 4px;}
-[data-testid="stSidebar"] .vip-side-label {display:block;box-sizing:border-box;min-height:19px;line-height:14px;padding:2px 4px 3px;margin:0;white-space:normal;overflow:visible;}
-[data-testid="stSidebar"] .vip-side-divider {margin:5px 0 2px;}
-[data-testid="stSidebar"] .vip-side-note {overflow-wrap:anywhere;}
-@media (max-height: 700px) {
-    [data-testid="stSidebar"] .vip-side-heading {gap:3px;}
-    [data-testid="stSidebar"] .vip-side-label {min-height:17px;line-height:13px;padding:1px 4px 3px;}
-    [data-testid="stSidebar"] .vip-side-divider {margin:3px 0 1px;}
-}
-/* Do not hide overflow: on very small screens users must still reach all controls. */
+[data-testid="stSidebar"] .st-key-team_card_julian button p::after {font-size:11px;margin-top:2px;line-height:1.3;}
+[data-testid="stSidebar"] .st-key-sidebar_brand p {font-size:14px;line-height:1.45;color:#f5e5ba;}
+[data-testid="stSidebar"] .st-key-sidebar_brand [data-testid="stCaptionContainer"] p {font-size:10px;line-height:1.4;color:#a49f86;}
+[data-testid="stSidebar"] .st-key-sidebar_nav_title [data-testid="stMarkdownContainer"] p,
+[data-testid="stSidebar"] .st-key-sidebar_team_title [data-testid="stMarkdownContainer"] p {font-size:11px!important;line-height:1.5!important;font-weight:600;color:#a49f86;letter-spacing:0.7px;padding:3px 4px 7px;margin:0;}
+[data-testid="stSidebar"] .st-key-sidebar_notes [data-testid="stCaptionContainer"] p {font-size:11px;line-height:1.45;color:#aab5a8;}
+/* Native layout containers own all spacing; small screens retain scrolling if needed. */
 </style>''',unsafe_allow_html=True)
 
 @st.cache_resource
@@ -222,24 +192,38 @@ active_person = st.session_state.get('team_profile_active')
 if active_person in TEAM_PROFILES:
     st.markdown(f'''<style>[data-testid="stSidebar"] .st-key-team_card_{active_person} button {{background:#1b2c24!important;border-color:#74613a!important;}}</style>''', unsafe_allow_html=True)
 
+# Use Streamlit's own container layout rather than CSS overrides of its internal gaps.
+# Older Streamlit versions fall back to their default spacing.
+def sidebar_group(key, gap=None):
+    import inspect
+    if 'gap' in inspect.signature(st.container).parameters:
+        return st.container(key=key, gap=gap)
+    return st.container(key=key)
+
 with st.sidebar:
-    st.markdown('<div class="vip-side-heading"><div class="vip-side-brand">♠ VIP INTELLIGENCE</div><div class="vip-side-subtitle">MACHINE LEARNING / VIP LIFECYCLE</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="vip-side-label">NAVEGACIÓN</div>', unsafe_allow_html=True)
-    for label, nav_key in NAV_ITEMS:
-        selected = label == section and active_person not in TEAM_PROFILES
-        # Keep widget keys stable even when the selected style changes.
-        with st.container(key=f'vipnav_{nav_key}_{"selected" if selected else "idle"}'):
-            st.button(label, key=f'vipnav_button_{nav_key}', use_container_width=True,
-                      on_click=select_main_page, args=(label,))
-    st.markdown('<div class="vip-side-divider"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="vip-side-label">EQUIPO DE DESARROLLO</div>', unsafe_allow_html=True)
-    for person in ('daniel', 'julian'):
-        member = TEAM_PROFILES[person]
-        with st.container(key=f'team_card_{person}'):
-            st.button(member['short'],key=f'team_sidebar_{person}',on_click=open_team_profile,
-                      args=(person,),use_container_width=True,
-                      help=f"{member['profession']} · Ver perfil profesional")
-    st.markdown('<div class="vip-side-note">Economía · Estadística · Ciencia de Datos</div><div class="vip-side-divider"></div><div class="vip-side-note">Demo con perfiles ficticios. No ingresar datos personales ni confidenciales.</div>', unsafe_allow_html=True)
+    with sidebar_group('sidebar_brand', None):
+        st.markdown('**♠ VIP INTELLIGENCE**')
+        st.caption('MACHINE LEARNING / VIP LIFECYCLE')
+    with sidebar_group('sidebar_navigation', None):
+        with sidebar_group('sidebar_nav_title', None):
+            st.markdown('NAVEGACIÓN')
+        for label, nav_key in NAV_ITEMS:
+            selected = label == section and active_person not in TEAM_PROFILES
+            with sidebar_group(f'vipnav_{nav_key}_{"selected" if selected else "idle"}', None):
+                st.button(label, key=f'vipnav_button_{nav_key}', use_container_width=True,
+                          on_click=select_main_page, args=(label,))
+    with sidebar_group('sidebar_team', None):
+        with sidebar_group('sidebar_team_title', None):
+            st.markdown('EQUIPO DE DESARROLLO')
+        for person in ('daniel', 'julian'):
+            member = TEAM_PROFILES[person]
+            with sidebar_group(f'team_card_{person}', None):
+                st.button(member['short'], key=f'team_sidebar_{person}', on_click=open_team_profile,
+                          args=(person,), use_container_width=True,
+                          help=f"{member['profession']} · Ver perfil profesional")
+    with sidebar_group('sidebar_notes', None):
+        st.caption('Economía · Estadística · Ciencia de Datos')
+        st.caption('Demo con perfiles ficticios. No ingresar datos personales ni confidenciales.')
 
 if active_person in TEAM_PROFILES:
     hero('Equipo de desarrollo · Perfil profesional')
