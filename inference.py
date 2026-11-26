@@ -1,3 +1,5 @@
+# Responsables de análisis: Julián Vega Castellón (churn) y Edwin Daniel Holguín Ángel (reactivación).
+# Coordinación del despliegue: Daniel Holguin. Integración con asistencia de IA.
 """Inference on synthetic examples. No dataset or identifiers needed."""
 from pathlib import Path
 import joblib
