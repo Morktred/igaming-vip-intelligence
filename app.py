@@ -46,7 +46,7 @@ def hero(section):
 with st.sidebar:
     st.markdown('### ♠ VIP INTELLIGENCE')
     st.caption('MACHINE LEARNING / VIP ANALYTICS')
-    section=st.radio('Navegación',['Inicio','Churn VIP','Reactivación VIP','Metodología y métricas'],label_visibility='collapsed')
+    section=st.radio('Navegación',['Inicio','Churn VIP','Reactivación VIP','Ranking de reactivación','Metodología y métricas'],label_visibility='collapsed')
     st.divider()
     st.caption('EQUIPO DE DESARROLLO')
     st.markdown('**Daniel Holguin** · Reactivación VIP')
@@ -121,6 +121,32 @@ def page_model(kind):
         score_panel(kind,result)
     else: st.caption('Completa los parámetros o utiliza el ejemplo ficticio precargado y pulsa Calcular score del modelo.')
 
+
+def ranking_page():
+    st.markdown('### Reactivación VIP · evaluación por ranking')
+    st.caption('Agosto de 2026 · evaluación retrospectiva · resultados agregados del notebook')
+    n, positives = 2323, 214
+    baseline = positives / n
+    evidence = {5: (117, 33), 10: (233, 58), 20: (465, 85), 30: (697, 116), 50: (1162, 155), 100: (2323, 214)}
+    st.write('Explora cómo se concentran los reingresos VIP observados al ordenar retrospectivamente los registros por su score. No se simula una intervención ni se generan recomendaciones individuales.')
+    pct = st.select_slider('Fracción superior del ranking histórico (%)', options=list(evidence), value=10, key='react_ranking_pct')
+    k, tp = evidence[pct]
+    precision, recall = tp / k, tp / positives
+    expected = k * baseline
+    a,b,c,d = st.columns(4)
+    with a: tile('Lift observado', f'{precision / baseline:.2f}x', 'Respecto de la tasa general')
+    with b: tile('Precisión@K', f'{precision:.1%}', f'{tp} reingresos de {k} registros')
+    with c: tile('Recall@K', f'{recall:.1%}', f'{tp} de {positives} eventos observados')
+    with d: tile('Referencia aleatoria', f'{expected:.1f}', 'Eventos esperados en igual tamaño de muestra')
+    st.markdown('**Tasa de reingreso observada**')
+    for label, value, color in [('Ranking histórico',precision,'#d8b974'),('Referencia aleatoria',baseline,'#659687')]:
+        st.markdown(f'<div style="margin:10px 0 4px;display:flex;justify-content:space-between"><span>{label}</span><strong>{value:.2%}</strong></div><div style="height:14px;background:#29382f;border-radius:8px;overflow:hidden"><div style="width:{value*100:.3f}%;height:100%;background:{color}"></div></div>',unsafe_allow_html=True)
+    st.caption('Barras sobre escala 0–100 %. La referencia es la prevalencia del evento en agosto (9,21 %).')
+    with st.expander('Ver tabla completa de evaluación retrospectiva'):
+        st.dataframe([{'Fracción superior':f'{f}%', 'Registros':k0, 'Reingresos':t0, 'Precisión':f'{t0/k0:.2%}', 'Recall':f'{t0/positives:.2%}', 'Lift':f'{(t0/k0)/baseline:.2f}x'} for f,(k0,t0) in evidence.items()],hide_index=True,use_container_width=True)
+    st.info('AP = 0,193 frente a prevalencia 0,0921 (2,09 veces). Brier = 0,0864 frente a referencia constante 0,0842: la calibración no está demostrada. El ranking describe asociación retrospectiva; no prueba causalidad, incremento de ingresos ni utilidad prospectiva.')
+    st.caption('Fuente: resultados agregados de la evaluación de agosto. No se incluyen registros, scores individuales ni identificadores.')
+
 def metrics_page():
     c=json.loads((ROOT/'metricas_churn.json').read_text()); r=json.loads((ROOT/'metricas_reactivacion.json').read_text())['test_retrospectivo']
     st.markdown('#### Evidencia de evaluación')
@@ -136,6 +162,8 @@ def metrics_page():
             with b: st.metric('Recall',f'{rec:.1%}')
             with d: st.metric('F1',f'{f1:.3f}')
     st.divider()
+    ranking_page()
+    st.divider()
     st.markdown('#### Alcance metodológico')
     st.write('Churn: clasificación a nivel usuario–mes. Votación soft con LR, MLP y Gradient Boosting; SMOTENC durante el entrenamiento. Reactivación: regresión logística sin sobremuestreo; la población son antiguos VIP ausentes en M. Los modelos no comparten población ni etiqueta.')
     st.write('El modelo de churn se reentrenó con los hiperparámetros y el umbral originales en scikit-learn 1.8.0 para compatibilidad con el modelo de reactivación. El artefacto de inferencia no conserva el remuestreador SMOTENC ajustado. Las métricas de churn corresponden a la reproducción con enero–agosto y evaluación en septiembre; la versión de despliegue se ajustó con enero–septiembre.')
@@ -146,13 +174,14 @@ def metrics_page():
 if section=='Inicio':
     a,b=st.columns(2)
     with a: tile('♠ Análisis 01','Churn VIP','Estima pérdida de calificación VIP al mes siguiente.')
-    with b: tile('♦ Análisis 02','Reactivación VIP','Estima reingreso al segmento VIP al mes siguiente.')
+    with b: tile('♦ Análisis 02','Reactivación VIP','Estudia el reingreso al segmento VIP y su ordenamiento retrospectivo.')
     st.markdown('#### Dos poblaciones, dos preguntas analíticas')
-    st.write('Elige un análisis en el menú lateral. Cada módulo presenta los atributos del modelo y un ejemplo sintético editable; calcula el score con el estimador entrenado. La sección de metodología conserva los resultados de evaluación y sus limitaciones.')
+    st.write('Elige un análisis en el menú lateral. Cada módulo presenta los atributos del modelo y un ejemplo sintético editable; calcula el score con el estimador entrenado. La sección de ranking permite explorar la concentración retrospectiva de reingresos. La metodología conserva las métricas completas y sus limitaciones.')
     st.markdown('#### Ciclo del análisis')
     st.markdown('**Histórico VIP**  →  **Preparación usuario–mes**  →  **Modelo de clasificación**  →  **Score y umbral**  →  **Evaluación del modelo**')
     st.info('Este prototipo no es una plataforma de apuestas y no contiene datos de usuarios reales.')
 elif section=='Churn VIP': page_model('churn')
 elif section=='Reactivación VIP': page_model('reactivacion')
+elif section=='Ranking de reactivación': ranking_page()
 else: metrics_page()
 st.markdown('<div class="footer">VIP INTELLIGENCE · DANIEL HOLGUIN &amp; JULIÁN VEGA · MACHINE LEARNING</div>',unsafe_allow_html=True)
