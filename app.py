@@ -131,8 +131,8 @@ def display_options(name, categories):
 
 COUNTS={'antiguedad_meses','dias_activos_mes','recencia_fin_mes','tickets_mes','spins_mes','delta_dias_activos','meses_fuera_vip','meses_vip_historicos','racha_vip_previa','reactivaciones_previas','dias_activos_ultimo_mes','recencia_fin_ultimo_mes','tickets_ultimo_mes','spins_ultimo_mes','delta_dias_activos_ultimo_mes'}
 
-def field(kind,name,bundle):
-    d=DEFAULTS[kind][name]; key=f'{kind}_{name}'; label=LABELS.get(name,name.replace('_',' ').capitalize()); cats=get_categories(kind,bundle)
+def field(kind,name,bundle,revision):
+    d=DEFAULTS[kind][name]; key=f'{kind}_{revision}_{name}'; label=LABELS.get(name,name.replace('_',' ').capitalize()); cats=get_categories(kind,bundle)
     if name in cats:
         opts = display_options(name, cats[name])
         return st.selectbox(label, opts, index=opts.index(d), key=key, format_func=display_category)
@@ -155,6 +155,13 @@ def score_panel(kind,result):
     with st.expander('Ver entrada que recibió el modelo'):
         st.dataframe(result['entrada'],hide_index=True)
 
+def reset_synthetic_example(kind):
+    # A new form and widget identity discards even unsubmitted browser edits.
+    revision_key = f'form_revision_{kind}'
+    st.session_state[revision_key] = st.session_state.get(revision_key, 0) + 1
+    st.session_state.pop(f'result_{kind}', None)
+    st.session_state[f'reset_notice_{kind}'] = True
+
 def page_model(kind):
     bundle=bundle_for(kind)
     is_churn=kind=='churn'
@@ -164,20 +171,22 @@ def page_model(kind):
     with c1: tile('Algoritmo','Votación soft' if is_churn else 'Regresión logística','Ensamble de tres estimadores' if is_churn else 'Clasificador lineal')
     with c2: tile('Atributos',len(bundle['features']),'Entrada sintética editable')
     with c3: tile('Umbral de decisión',f"{bundle['umbral']*100:.2f}%",'Determinado con datos de desarrollo')
-    if st.button('Restablecer ejemplo sintético',key=f'reset_{kind}'):
-        for f in bundle['features']: st.session_state.pop(f'{kind}_{f}',None)
-        st.session_state.pop(f'result_{kind}',None); st.rerun()
+    st.button('Restablecer ejemplo sintético', key=f'reset_{kind}',
+              on_click=reset_synthetic_example, args=(kind,))
+    revision = st.session_state.get(f'form_revision_{kind}', 0)
+    if st.session_state.pop(f'reset_notice_{kind}', False):
+        st.success('Ejemplo sintético restablecido. Pulsa Calcular score del modelo para generar un nuevo resultado.')
     st.caption('Los valores son ficticios; los importes usan las unidades de la fuente. Los campos se mantienen en su escala original: el modelo aplica sus propias transformaciones.')
     if is_churn: st.caption('Si no venía del mes anterior, se asigna cambio de nivel no aplicable y los deltas se codifican en cero según el preprocesamiento del modelo.')
     if is_churn: st.caption('El origen temporal de perfilado está pendiente de verificación; resultado exclusivamente demostrativo.')
     else: st.caption('Si la racha previa es de un mes, los tres deltas se tratan como faltantes estructurales. No se simula actividad durante la ausencia.')
-    with st.form(f'form_{kind}'):
+    with st.form(f'form_{kind}_{revision}'):
         values={}
         for i,(name,fields) in enumerate(GROUPS[kind]):
             with st.expander(name,expanded=i==0):
                 cols=st.columns(3)
                 for j,f in enumerate(fields):
-                    with cols[j%3]: values[f]=field(kind,f,bundle)
+                    with cols[j%3]: values[f]=field(kind,f,bundle,revision)
         submitted=st.form_submit_button('Calcular score del modelo',use_container_width=True)
     if submitted:
         try: st.session_state[f'result_{kind}']=predict(kind,bundle,values)
