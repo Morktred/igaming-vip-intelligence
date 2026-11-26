@@ -1,7 +1,9 @@
 import json
 from pathlib import Path
 import html
+import math
 import streamlit as st
+import pandas as pd
 from inference import load_bundle, get_categories, predict, DEFAULTS
 
 st.set_page_config(page_title='VIP Intelligence',page_icon='♠',layout='wide',initial_sidebar_state='expanded')
@@ -131,8 +133,8 @@ def display_options(name, categories):
 
 COUNTS={'antiguedad_meses','dias_activos_mes','recencia_fin_mes','tickets_mes','spins_mes','delta_dias_activos','meses_fuera_vip','meses_vip_historicos','racha_vip_previa','reactivaciones_previas','dias_activos_ultimo_mes','recencia_fin_ultimo_mes','tickets_ultimo_mes','spins_ultimo_mes','delta_dias_activos_ultimo_mes'}
 
-def field(kind,name,bundle,revision):
-    d=DEFAULTS[kind][name]; key=f'{kind}_{revision}_{name}'; label=LABELS.get(name,name.replace('_',' ').capitalize()); cats=get_categories(kind,bundle)
+def field(kind,name,bundle,revision,defaults=None):
+    d=(DEFAULTS[kind] if defaults is None else defaults)[name]; key=f'{kind}_{revision}_{name}'; label=LABELS.get(name,name.replace('_',' ').capitalize()); cats=get_categories(kind,bundle)
     if name in cats:
         opts = display_options(name, cats[name])
         return st.selectbox(label, opts, index=opts.index(d), key=key, format_func=display_category)
@@ -159,8 +161,168 @@ def reset_synthetic_example(kind):
     # A new form and widget identity discards even unsubmitted browser edits.
     revision_key = f'form_revision_{kind}'
     st.session_state[revision_key] = st.session_state.get(revision_key, 0) + 1
+    st.session_state.pop(f'manual_defaults_{kind}', None)
     st.session_state.pop(f'result_{kind}', None)
     st.session_state[f'reset_notice_{kind}'] = True
+
+# Complete fictional scenarios, not sampled from the source dataset.
+# Names describe inputs, not a promised or optimized outcome.
+def synthetic_profiles(kind):
+    d=DEFAULTS[kind]
+    if kind=='churn':
+        return {
+            'A · Actividad sostenida': ( 'Perfil con actividad frecuente y variaciones moderadas.', dict(d,
+                nivel_vip='oro', antiguedad_meses=6, dias_activos_mes=25, recencia_fin_mes=1,
+                tickets_mes=160, spins_mes=800, apuesta_dep_mes=16000., apuesta_casino_mes=14000.,
+                deposito_mes=5500., retiro_mes=2000., ggr_dep_mes=420., ggr_slot_mes=300.,
+                ggr_live_mes=0., ggr_virt_mes=0., bono_total_mes=120., delta_dias_activos=2,
+                delta_deposito=400., delta_ggr=80., cambio_nivel='se_mantuvo')),
+            'B · Actividad intermedia': ('Perfil con menor frecuencia y descenso moderado de actividad.', dict(d)),
+            'C · Actividad decreciente': ('Perfil con menor actividad reciente y disminución del valor histórico.', dict(d,
+                nivel_vip='bronce', antiguedad_meses=4, dias_activos_mes=6, recencia_fin_mes=18,
+                tickets_mes=20, spins_mes=90, apuesta_dep_mes=2600., apuesta_casino_mes=1800.,
+                deposito_mes=800., retiro_mes=400., ggr_dep_mes=60., ggr_slot_mes=40.,
+                ggr_live_mes=0., ggr_virt_mes=0., bono_total_mes=20., delta_dias_activos=-12,
+                delta_deposito=-1800., delta_ggr=-320., cambio_nivel='descendio')),
+        }
+    return {
+        'A · Ausencia prolongada': ('Dos meses VIP consecutivos observados antes de una ausencia de cuatro meses.', dict(d,
+            meses_fuera_vip=4, ultimo_nivel_vip='bronce', nivel_vip_max_historico='plata',
+            meses_vip_historicos=2, racha_vip_previa=2, reactivaciones_previas=0,
+            dias_activos_ultimo_mes=7, recencia_fin_ultimo_mes=15, tickets_ultimo_mes=20,
+            spins_ultimo_mes=100, apuesta_total_ultimo_mes=4200., deposito_ultimo_mes=900.,
+            retiro_ultimo_mes=350., ggr_general_ultimo_mes=100., bono_total_ultimo_mes=20.,
+            cambio_nivel_ultimo_mes='descendio', delta_dias_activos_ultimo_mes=-10,
+            delta_deposito_ultimo_mes=-1500., delta_ggr_ultimo_mes=-240.,
+            deposito_promedio_historico=1650., ggr_promedio_historico=220.,
+            apuesta_promedio_historico=8100., bono_promedio_historico=60., dias_activos_promedio_historico=12.)),
+        'B · Historial continuo': ('Tres meses VIP consecutivos, con actividad histórica regular y ausencia de dos meses.', dict(d,
+            meses_fuera_vip=2, ultimo_nivel_vip='plata', nivel_vip_max_historico='plata',
+            meses_vip_historicos=3, racha_vip_previa=3, reactivaciones_previas=0,
+            dias_activos_ultimo_mes=18, recencia_fin_ultimo_mes=5, tickets_ultimo_mes=90,
+            spins_ultimo_mes=250, apuesta_total_ultimo_mes=20000., deposito_ultimo_mes=3500.,
+            retiro_ultimo_mes=1200., ggr_general_ultimo_mes=400., bono_total_ultimo_mes=100.,
+            cambio_nivel_ultimo_mes='se_mantuvo', delta_dias_activos_ultimo_mes=-3,
+            delta_deposito_ultimo_mes=-500., delta_ggr_ultimo_mes=-120.,
+            deposito_promedio_historico=4200., ggr_promedio_historico=520.,
+            apuesta_promedio_historico=24000., bono_promedio_historico=130., dias_activos_promedio_historico=21.)),
+        'C · Reingreso previo': ('Cuatro meses VIP observados, un reingreso previo y una ausencia reciente.', dict(d,
+            meses_fuera_vip=1, ultimo_nivel_vip='plata', nivel_vip_max_historico='plata',
+            meses_vip_historicos=4, racha_vip_previa=2, reactivaciones_previas=1,
+            cambio_nivel_ultimo_mes='se_mantuvo')),
+    }
+
+def load_manual_profile(kind,profile):
+    st.session_state[f'manual_defaults_{kind}']=dict(profile)
+    revision_key=f'form_revision_{kind}'
+    st.session_state[revision_key]=st.session_state.get(revision_key,0)+1
+    st.session_state.pop(f'result_{kind}',None)
+    st.session_state[f'mode_{kind}']='Predicción manual'
+    st.session_state[f'profile_notice_{kind}']=True
+
+def profile_table(kind,bundle,profiles):
+    cats=get_categories(kind,bundle)
+    rows=[]
+    for group,fields in GROUPS[kind]:
+        for f in fields:
+            row={'Grupo':group,'Variable':LABELS.get(f,f)}
+            for name,values in profiles.items():
+                v=values[f]
+                row[name]=display_category(v) if f in cats else ('No aplica' if pd.isna(v) else str(v))
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+def profiles_page(kind,bundle):
+    st.subheader('Comparación de perfiles sintéticos')
+    st.write('Cada perfil contiene todos los atributos del modelo. Los scores se calculan al abrir esta sección con el estimador entrenado; no son valores prefijados. Los casos son ilustrativos, no representan jugadores reales.')
+    profiles=synthetic_profiles(kind)
+    results={name:predict(kind,bundle,values) for name,(_,values) in profiles.items()}
+    for col,(name,(description,values)) in zip(st.columns(3),profiles.items()):
+        with col:
+            r=results[name]
+            tile(name,f"{r['score']:.2%}",description)
+            st.caption(f"Clase {r['clase']} · umbral {r['umbral']:.2%}")
+    comparison=pd.DataFrame([{'Perfil':name,'Score (%)':r['score']*100,'Umbral (%)':r['umbral']*100} for name,r in results.items()])
+    st.bar_chart(comparison,x='Perfil',y='Score (%)',color='#D8B974',use_container_width=True)
+    st.dataframe(comparison.round(2),hide_index=True,use_container_width=True)
+    with st.expander('Ver todos los atributos de los tres perfiles'):
+        st.dataframe(profile_table(kind,bundle,{name:r['entrada'].iloc[0].to_dict() for name,r in results.items()}),hide_index=True,use_container_width=True)
+    name=st.selectbox('Selecciona un perfil para consultar su resultado completo',list(profiles),key=f'profile_detail_{kind}')
+    score_panel(kind,results[name])
+    st.button('Cargar este perfil en predicción manual',key=f'load_profile_{kind}',on_click=load_manual_profile,args=(kind,profiles[name][1]))
+    st.caption('Los escenarios no son una evaluación de desempeño ni una recomendación de intervención. Solo comprueban la inferencia con entradas ficticias.')
+
+# One-at-a-time sensitivity: intentionally restrict to numeric variables that
+# can vary independently under simple domain and calendar constraints.
+def sensitivity_ranges(kind,base):
+    if kind=='churn':
+        return {
+            'recencia_fin_mes': list(range(0,min(21,31-base['dias_activos_mes'])+1)),
+            'dias_activos_mes': list(range(max(1,1+base['delta_dias_activos']),min(31-base['recencia_fin_mes'],31+base['delta_dias_activos'])+1)),
+            'deposito_mes': sorted(set([max(0.,base['delta_deposito'],base['deposito_mes']*factor) for factor in (0.5,.75,1.,1.25,1.5)])),
+            'ggr_slot_mes': sorted(set([base['ggr_slot_mes']+shift for shift in (-200.,-100.,0.,100.,200.)])),
+        }
+    max_absence=min(5,8-base['meses_vip_historicos']-base['reactivaciones_previas'])
+    # For the historical averages, keep the other observed months nonnegative.
+    dep_min=max(0.,base['delta_deposito_ultimo_mes'])
+    dep_max=(base['meses_vip_historicos']*base['deposito_promedio_historico']+base['delta_deposito_ultimo_mes'])/2
+    days_min=max(1,1+base['delta_dias_activos_ultimo_mes'],math.ceil((base['meses_vip_historicos']*base['dias_activos_promedio_historico']+base['delta_dias_activos_ultimo_mes']-(base['meses_vip_historicos']-2)*31)/2))
+    days_max=min(31-base['recencia_fin_ultimo_mes'],31+base['delta_dias_activos_ultimo_mes'],int((base['meses_vip_historicos']*base['dias_activos_promedio_historico']+base['delta_dias_activos_ultimo_mes']-(base['meses_vip_historicos']-2))/2))
+    options = {
+        'meses_fuera_vip': list(range(1,max_absence+1)),
+        'recencia_fin_ultimo_mes': list(range(0,min(21,31-base['dias_activos_ultimo_mes'])+1)),
+        'dias_activos_ultimo_mes': list(range(days_min,days_max+1)),
+        'deposito_ultimo_mes': sorted(set([min(dep_max,max(dep_min,base['deposito_ultimo_mes']*factor)) for factor in (.5,.75,1.,1.25,1.5)])),
+        'ggr_general_ultimo_mes': sorted(set([base['ggr_general_ultimo_mes']+shift for shift in (-200.,-100.,0.,100.,200.)])),
+    }
+    # A two-month history fixes last-month quantities when both mean and delta are held fixed.
+    if base['meses_vip_historicos']==2:
+        for f in ('dias_activos_ultimo_mes','deposito_ultimo_mes','ggr_general_ultimo_mes'):
+            options.pop(f,None)
+    return {f:vals for f,vals in options.items() if len(set(vals+[base[f]]))>1}
+
+def sensitivity_results(kind,bundle,base,variable,values):
+    original=predict(kind,bundle,base)
+    rows=[]
+    for value in sorted(set(values+[base[variable]])):
+        result=predict(kind,bundle,dict(base,**{variable:value}))
+        before=original['entrada'].iloc[0]; after=result['entrada'].iloc[0]
+        # Confirm that preprocessing at inference did not alter other inputs.
+        for f in bundle['features']:
+            if f!=variable:
+                assert (pd.isna(before[f]) and pd.isna(after[f])) or before[f]==after[f]
+        rows.append({'Valor':value,'Score (%)':result['score']*100,'Umbral (%)':result['umbral']*100,'Cambio (pp)':(result['score']-original['score'])*100,'Clase':result['clase']})
+    return original,pd.DataFrame(rows)
+
+def sensitivity_page(kind,bundle):
+    st.subheader('Análisis de sensibilidad · una variable a la vez')
+    st.write('Selecciona un perfil ficticio y una variable. El modelo vuelve a calcular el score para cada valor del eje horizontal; todas las demás entradas permanecen constantes. Es una exploración local del modelo, no una estimación causal.')
+    profiles=synthetic_profiles(kind)
+    name=st.selectbox('Perfil sintético de referencia',list(profiles),key=f'sensitivity_profile_{kind}')
+    description,base=profiles[name]
+    st.caption(description)
+    ranges=sensitivity_ranges(kind,base)
+    variable=st.selectbox('Variable que se modifica',list(ranges),format_func=lambda f:LABELS[f],key=f'sensitivity_variable_{kind}_{name}')
+    original,table=sensitivity_results(kind,bundle,base,variable,ranges[variable])
+    a,b,c=st.columns(3)
+    with a: tile('Score base',f"{original['score']:.2%}",'Perfil de referencia')
+    with b: tile('Atributos fijos',len(bundle['features'])-1,'Sin modificación')
+    with c: tile('Umbral',f"{original['umbral']:.2%}",'Umbral original')
+    st.caption(f"Valor base: {base[variable]:g} · Variable analizada: {LABELS[variable]}")
+    # Plot with an explicit linear numeric axis, not equally spaced categories.
+    import altair as alt
+    long=table.melt(id_vars=['Valor'],value_vars=['Score (%)','Umbral (%)'],var_name='Serie',value_name='Porcentaje')
+    plot=alt.Chart(long).mark_line(point=True).encode(
+        x=alt.X('Valor:Q',title=LABELS[variable],scale=alt.Scale(zero=False)),
+        y=alt.Y('Porcentaje:Q',title='Score (%)',scale=alt.Scale(domain=[0,100])),
+        color=alt.Color('Serie:N',scale=alt.Scale(domain=['Score (%)','Umbral (%)'],range=['#D8B974','#CF806B'])),
+        tooltip=['Serie:N',alt.Tooltip('Valor:Q'),alt.Tooltip('Porcentaje:Q',format='.2f')]
+    ).properties(height=320)
+    st.altair_chart(plot,use_container_width=True)
+    st.dataframe(table.round(3),hide_index=True,use_container_width=True)
+    with st.expander('Ver atributos fijos del perfil base'):
+        st.dataframe(profile_table(kind,bundle,{'Perfil base':original['entrada'].iloc[0].to_dict()}),hide_index=True,use_container_width=True)
+    st.info('Los rangos son escenarios ficticios restringidos mediante controles simples de coherencia; no garantizan que todas las combinaciones estén representadas en entrenamiento. Las diferencias son cambios en la salida del estimador, no efectos reales ni probabilidades calibradas.')
 
 def page_model(kind):
     bundle=bundle_for(kind)
@@ -169,14 +331,24 @@ def page_model(kind):
     st.caption('Mes de referencia M cerrado → resultado en M+1. No se predice abandono total ni retorno al juego.')
     c1,c2,c3=st.columns(3)
     with c1: tile('Algoritmo','Votación soft' if is_churn else 'Regresión logística','Ensamble de tres estimadores' if is_churn else 'Clasificador lineal')
-    with c2: tile('Atributos',len(bundle['features']),'Entrada sintética editable')
+    with c2: tile('Atributos',len(bundle['features']),'Variables de entrada')
     with c3: tile('Umbral de decisión',f"{bundle['umbral']*100:.2f}%",'Determinado con datos de desarrollo')
+    mode=st.radio('Modalidad de análisis',['Predicción manual','Perfiles sintéticos','Análisis de sensibilidad'],horizontal=True,key=f'mode_{kind}')
+    if mode=='Predicción manual':
+        if st.session_state.pop(f'profile_notice_{kind}',False): st.success('Perfil completo cargado. Puedes modificar sus atributos y calcular el score.')
+        manual_page(kind,bundle)
+    elif mode=='Perfiles sintéticos': profiles_page(kind,bundle)
+    else: sensitivity_page(kind,bundle)
+
+def manual_page(kind,bundle):
+    is_churn=kind=='churn'
     st.button('Restablecer ejemplo sintético', key=f'reset_{kind}',
               on_click=reset_synthetic_example, args=(kind,))
     revision = st.session_state.get(f'form_revision_{kind}', 0)
     if st.session_state.pop(f'reset_notice_{kind}', False):
         st.success('Ejemplo sintético restablecido. Pulsa Calcular score del modelo para generar un nuevo resultado.')
-    st.caption('Los valores son ficticios; los importes usan las unidades de la fuente. Los campos se mantienen en su escala original: el modelo aplica sus propias transformaciones.')
+    defaults = st.session_state.get(f'manual_defaults_{kind}', DEFAULTS[kind])
+    st.caption('El cálculo usa todos los atributos, incluso los grupos cerrados. Los valores son ficticios; los importes usan las unidades de la fuente. Los campos se mantienen en su escala original: el modelo aplica sus propias transformaciones.')
     if is_churn: st.caption('Si no venía del mes anterior, se asigna cambio de nivel no aplicable y los deltas se codifican en cero según el preprocesamiento del modelo.')
     if is_churn: st.caption('El origen temporal de perfilado está pendiente de verificación; resultado exclusivamente demostrativo.')
     else: st.caption('Si la racha previa es de un mes, los tres deltas se tratan como faltantes estructurales. No se simula actividad durante la ausencia.')
@@ -186,9 +358,10 @@ def page_model(kind):
             with st.expander(name,expanded=i==0):
                 cols=st.columns(3)
                 for j,f in enumerate(fields):
-                    with cols[j%3]: values[f]=field(kind,f,bundle,revision)
+                    with cols[j%3]: values[f]=field(kind,f,bundle,revision,defaults)
         submitted=st.form_submit_button('Calcular score del modelo',use_container_width=True)
     if submitted:
+        st.session_state[f'manual_defaults_{kind}']=dict(values)
         try: st.session_state[f'result_{kind}']=predict(kind,bundle,values)
         except ValueError as e: st.session_state.pop(f'result_{kind}',None); st.error(str(e))
         except Exception as e: st.session_state.pop(f'result_{kind}',None); st.error(f'No se pudo ejecutar el modelo: {type(e).__name__}. Revisa las dependencias y la entrada.')
@@ -254,7 +427,7 @@ if section=='Inicio':
     with a: tile('♠ Análisis 01','Churn VIP','Estima pérdida de calificación VIP al mes siguiente.')
     with b: tile('♦ Análisis 02','Reactivación VIP','Estudia el reingreso al segmento VIP y su ordenamiento retrospectivo.')
     st.markdown('#### Dos poblaciones, dos preguntas analíticas')
-    st.write('Elige un análisis en el menú lateral. Cada módulo presenta los atributos del modelo y un ejemplo sintético editable; calcula el score con el estimador entrenado. La sección de ranking permite explorar la concentración retrospectiva de reingresos. La metodología conserva las métricas completas y sus limitaciones.')
+    st.write('Elige un análisis en el menú lateral. Cada módulo ofrece predicción manual, comparación de tres perfiles sintéticos completos y análisis de sensibilidad de una variable a la vez; todos calculan scores con el estimador entrenado. La sección de ranking permite explorar la concentración retrospectiva de reingresos. La metodología conserva las métricas completas y sus limitaciones.')
     st.markdown('#### Ciclo del análisis')
     st.markdown('**Histórico VIP**  →  **Preparación usuario–mes**  →  **Modelo de clasificación**  →  **Score y umbral**  →  **Evaluación del modelo**')
     st.info('Este prototipo no es una plataforma de apuestas y no contiene datos de usuarios reales.')
