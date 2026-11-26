@@ -120,8 +120,24 @@ hr {border-color:#344237!important;}
 [data-testid="stSidebar"] .st-key-team_card_julian button p::after {font-size:11px;margin-top:2px;line-height:1.3;}
 [data-testid="stSidebar"] .st-key-sidebar_brand p {font-size:14px;line-height:1.45;color:#f5e5ba;}
 [data-testid="stSidebar"] .st-key-sidebar_brand [data-testid="stCaptionContainer"] p {font-size:10px;line-height:1.4;color:#a49f86;}
-[data-testid="stSidebar"] .st-key-sidebar_nav_title [data-testid="stMarkdownContainer"] p,
-[data-testid="stSidebar"] .st-key-sidebar_team_title [data-testid="stMarkdownContainer"] p {font-size:11px!important;line-height:1.5!important;font-weight:600;color:#a49f86;letter-spacing:0.7px;padding:3px 4px 7px;margin:0;}
+/* Reserve actual layout height for each heading, not padding on a Markdown paragraph.
+   The label and the first button remain separate elements in normal document flow. */
+[data-testid="stSidebar"] .st-key-sidebar_nav_title,
+[data-testid="stSidebar"] .st-key-sidebar_team_title {
+    box-sizing:border-box!important;min-height:30px!important;flex-shrink:0!important;
+    overflow:visible!important;margin:0!important;padding:0!important;
+}
+[data-testid="stSidebar"] .sidebar-section-label {
+    display:block;box-sizing:border-box;min-height:30px;
+    padding:7px 4px 8px;margin:0;line-height:15px;
+    font-size:11px;font-weight:600;color:#a49f86;letter-spacing:.7px;
+    white-space:normal;
+}
+[data-testid="stSidebar"] .st-key-sidebar_nav_title .sidebar-section-label {min-height:34px;padding-top:9px;padding-bottom:10px;}
+[data-testid="stSidebar"] .st-key-sidebar_nav_title {min-height:34px!important;}
+/* Allow wrapped menu titles to grow on narrower sidebars. */
+[data-testid="stSidebar"] [class*="st-key-vipnav_"] button {height:auto!important;}
+
 [data-testid="stSidebar"] .st-key-sidebar_notes [data-testid="stCaptionContainer"] p {font-size:11px;line-height:1.45;color:#aab5a8;}
 /* Native layout containers own all spacing; small screens retain scrolling if needed. */
 </style>''',unsafe_allow_html=True)
@@ -206,7 +222,7 @@ with st.sidebar:
         st.caption('MACHINE LEARNING / VIP LIFECYCLE')
     with sidebar_group('sidebar_navigation', None):
         with sidebar_group('sidebar_nav_title', None):
-            st.markdown('NAVEGACIÓN')
+            st.markdown('<div class="sidebar-section-label">NAVEGACIÓN</div>', unsafe_allow_html=True)
         for label, nav_key in NAV_ITEMS:
             selected = label == section and active_person not in TEAM_PROFILES
             with sidebar_group(f'vipnav_{nav_key}_{"selected" if selected else "idle"}', None):
@@ -214,7 +230,7 @@ with st.sidebar:
                           on_click=select_main_page, args=(label,))
     with sidebar_group('sidebar_team', None):
         with sidebar_group('sidebar_team_title', None):
-            st.markdown('EQUIPO DE DESARROLLO')
+            st.markdown('<div class="sidebar-section-label">EQUIPO DE DESARROLLO</div>', unsafe_allow_html=True)
         for person in ('daniel', 'julian'):
             member = TEAM_PROFILES[person]
             with sidebar_group(f'team_card_{person}', None):
