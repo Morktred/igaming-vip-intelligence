@@ -1,34 +1,49 @@
 # ♠ VIP Intelligence
 
-Predictive analytics for iGaming VIP lifecycle transitions, powered by machine learning and Streamlit.
+Predictive analytics platform for iGaming VIP lifecycle management, powered by machine learning and Streamlit.
 
-**Responsable del despliegue:** Daniel Holguin
+**Deployment by:** Daniel Holguin
 
-## Funcionalidades
+## Overview
 
-- Churn VIP: estima la pérdida de calificación VIP en el mes siguiente mediante votación soft (regresión logística, MLP y Gradient Boosting).
-- Reactivación VIP: estima el reingreso al segmento VIP mediante regresión logística.
-- Formularios con perfiles sintéticos editables, scores, umbrales y métricas agregadas de evaluación.
+VIP Intelligence is a machine learning solution designed to analyze transitions within the iGaming VIP lifecycle through two predictive models.
 
-Los dos análisis fueron desarrollados en colaboración. La interfaz es una demostración técnica; no predice abandono total de la plataforma ni retorno al juego.
+## Predictive Models
 
-## Ejecución local
+| Model | Algorithm | ROC-AUC |
+|---|---|---:|
+| VIP Churn | Soft Voting Classifier | 0.741 |
+| VIP Reactivation | Logistic Regression | 0.675 |
 
-Python 3.13 recomendado.
+## Features
 
-```bash
-python -m pip install -r requirements.txt
-python -m streamlit run app.py
-```
+- Interactive predictive dashboard.
+- Individual model scoring.
+- Model performance indicators.
+- Casino-inspired visual interface.
+- Integrated data preprocessing.
+- Synthetic profiles for demonstration.
 
-## Despliegue en Streamlit Community Cloud
+## Technology Stack
 
-Seleccionar el repositorio, la rama `main` y `app.py` como archivo principal. Utilizar Python 3.13 si está disponible. Mantener `.streamlit/config.toml` en su carpeta original.
+Python · Streamlit · Scikit-learn · Pandas · NumPy · Machine Learning
 
-## Artefactos y evaluación
+## Deployment
 
-La aplicación carga dos modelos entrenados localmente y no necesita las bases de entrenamiento. El modelo de churn fue reproducido para compatibilidad con scikit-learn 1.8.0 e imbalanced-learn 0.14.1, manteniendo arquitectura, hiperparámetros y umbral original de 0,40; las predicciones individuales pueden diferir del artefacto original. Las métricas de churn corresponden a la evaluación retrospectiva de septiembre de la reproducción compatible. La versión de despliegue fue ajustada con enero–septiembre y no conserva el remuestreador ajustado. Reactivación conserva su modelo original y su evaluación retrospectiva de agosto. Los scores no tienen calibración demostrada. La disponibilidad temporal de `perfilado` en churn requiere confirmación. Las métricas de ambos modelos no son directamente comparables debido a las diferentes poblaciones y prevalencias.
+Install dependencies:
 
-## Privacidad y uso responsable
+`pip install -r requirements.txt`
 
-Los ejemplos precargados son ficticios. No se incluyen archivos de datos de entrenamiento, identificadores ni registros individuales. Los artefactos contienen parámetros aprendidos de los datos: su publicación y la de las métricas requieren autorización del titular de la información. No introducir datos personales o confidenciales. Esta demostración no ofrece apuestas ni recomendaciones de contacto o incentivos. No usar para decisiones sobre personas sin validación independiente y controles adecuados de privacidad y juego responsable.
+Run the application:
+
+`streamlit run app.py`
+
+## Privacy and Responsible Use
+
+This repository does not include training datasets or individual customer records. Demonstration profiles are synthetic.
+
+Model scores are experimental estimates, not calibrated probabilities. Further validation, including temporal feature availability, is required before production use.
+
+---
+
+**VIP Intelligence | iGaming & Data Science**
