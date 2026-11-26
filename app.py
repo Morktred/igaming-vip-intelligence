@@ -103,6 +103,42 @@ hr {border-color:#344237!important;}
 [data-testid="stSidebar"] .st-key-team_card_julian button p::after {display:block;color:#aab5a8;font-size:12px;font-weight:400;margin-top:3px;}
 [data-testid="stSidebar"] .st-key-team_card_daniel button p::after {content:"Economista";}
 [data-testid="stSidebar"] .st-key-team_card_julian button p::after {content:"Estadístico";}
+
+/* Compact sidebar: keep every destination accessible without a second scroll on typical desktop screens. */
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] {padding-bottom:0!important;}
+[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {padding-top:0.65rem!important;padding-bottom:0.5rem!important;}
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {gap:0.25rem!important;}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {margin:0!important;}
+[data-testid="stSidebar"] .vip-side-brand {font-weight:700;font-size:15px;color:#f5e5ba;line-height:1.3;padding:0 4px;margin:0;}
+[data-testid="stSidebar"] .vip-side-subtitle {font-size:10px;letter-spacing:.35px;color:#a49f86;margin:4px 0 8px;padding:0 4px;line-height:1.3;}
+[data-testid="stSidebar"] .vip-side-label {font-size:10px;font-weight:600;letter-spacing:1px;color:#a49f86;padding:5px 4px 3px;line-height:1.2;}
+[data-testid="stSidebar"] .vip-side-divider {height:1px;background:#39473d;margin:7px 0 3px;}
+[data-testid="stSidebar"] .vip-side-note {font-size:10px;color:#aab5a8;line-height:1.4;padding:3px 4px;margin:0;}
+[data-testid="stSidebar"] [class*="st-key-vipnav_"] button {min-height:35px!important;padding:5px 8px!important;gap:10px!important;}
+[data-testid="stSidebar"] [class*="st-key-vipnav_"] button::before {width:17px;height:17px;flex:0 0 17px;}
+[data-testid="stSidebar"] [class*="st-key-vipnav_"] button p {font-size:13px!important;line-height:1.25!important;}
+[data-testid="stSidebar"] [class*="st-key-vipnav_"] button [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] .st-key-team_card_daniel button [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] .st-key-team_card_julian button [data-testid="stMarkdownContainer"] {display:flex!important;flex:1 1 0!important;justify-content:flex-start!important;align-items:flex-start!important;text-align:left!important;min-width:0!important;}
+[data-testid="stSidebar"] [class*="st-key-vipnav_"] button [data-testid="stMarkdownContainer"] p,
+[data-testid="stSidebar"] .st-key-team_card_daniel button [data-testid="stMarkdownContainer"] p,
+[data-testid="stSidebar"] .st-key-team_card_julian button [data-testid="stMarkdownContainer"] p {width:100%!important;text-align:left!important;}
+[data-testid="stSidebar"] .st-key-team_card_daniel button,
+[data-testid="stSidebar"] .st-key-team_card_julian button {min-height:45px!important;padding:5px 7px!important;gap:9px!important;}
+[data-testid="stSidebar"] .st-key-team_card_daniel button::before,
+[data-testid="stSidebar"] .st-key-team_card_julian button::before {width:32px;height:32px;flex:0 0 32px;font-size:11px;}
+[data-testid="stSidebar"] .st-key-team_card_daniel button p,
+[data-testid="stSidebar"] .st-key-team_card_julian button p {font-size:13px!important;line-height:1.25!important;}
+[data-testid="stSidebar"] .st-key-team_card_daniel button p::after,
+[data-testid="stSidebar"] .st-key-team_card_julian button p::after {font-size:11px;margin-top:1px;}
+@media (max-height: 700px) {
+    [data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {padding-top:0.25rem!important;padding-bottom:0.25rem!important;}
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {gap:0.125rem!important;}
+    [data-testid="stSidebar"] [class*="st-key-vipnav_"] button {min-height:30px!important;padding:4px 8px!important;}
+    [data-testid="stSidebar"] .vip-side-divider {margin:4px 0 2px;}
+    [data-testid="stSidebar"] .vip-side-subtitle {margin-bottom:3px;}
+}
+/* Do not hide overflow: on very small screens users must still reach all controls. */
 </style>''',unsafe_allow_html=True)
 
 @st.cache_resource
@@ -141,8 +177,8 @@ INTEREST_ICONS = {
 
 NAV_ITEMS = [
     ('Inicio · Ciclo de vida', 'home'),
-    ('Churn Intelligence', 'churn'),
-    ('Reactivation Intelligence', 'reactivation'),
+    ('Churn VIP Intelligence', 'churn'),
+    ('Reactivation VIP Intelligence', 'reactivation'),
     ('Research Lab · Ciclo VIP', 'research'),
     ('Evaluación y metodología', 'metrics'),
     ('Development Roadmap', 'roadmap'),
@@ -172,26 +208,21 @@ if active_person in TEAM_PROFILES:
     st.markdown(f'''<style>[data-testid="stSidebar"] .st-key-team_card_{active_person} button {{background:#1b2c24!important;border-color:#74613a!important;}}</style>''', unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown('### ♠ VIP INTELLIGENCE')
-    st.caption('MACHINE LEARNING / VIP LIFECYCLE')
-    st.caption('NAVEGACIÓN')
+    st.markdown('<div class="vip-side-brand">♠ VIP INTELLIGENCE</div><div class="vip-side-subtitle">MACHINE LEARNING / VIP LIFECYCLE</div><div class="vip-side-label">NAVEGACIÓN</div>', unsafe_allow_html=True)
     for label, nav_key in NAV_ITEMS:
         selected = label == section and active_person not in TEAM_PROFILES
         # Keep widget keys stable even when the selected style changes.
         with st.container(key=f'vipnav_{nav_key}_{"selected" if selected else "idle"}'):
             st.button(label, key=f'vipnav_button_{nav_key}', use_container_width=True,
                       on_click=select_main_page, args=(label,))
-    st.divider()
-    st.caption('EQUIPO DE DESARROLLO')
+    st.markdown('<div class="vip-side-divider"></div><div class="vip-side-label">EQUIPO DE DESARROLLO</div>', unsafe_allow_html=True)
     for person in ('daniel', 'julian'):
         member = TEAM_PROFILES[person]
         with st.container(key=f'team_card_{person}'):
             st.button(member['short'],key=f'team_sidebar_{person}',on_click=open_team_profile,
                       args=(person,),use_container_width=True,
                       help=f"{member['profession']} · Ver perfil profesional")
-    st.caption('Economía · Estadística · Ciencia de Datos')
-    st.divider()
-    st.caption('Demostración técnica · perfiles ficticios. No ingresar datos personales ni información confidencial.')
+    st.markdown('<div class="vip-side-note">Economía · Estadística · Ciencia de Datos</div><div class="vip-side-divider"></div><div class="vip-side-note">Demo con perfiles ficticios. No ingresar datos personales ni confidenciales.</div>', unsafe_allow_html=True)
 
 if active_person in TEAM_PROFILES:
     hero('Equipo de desarrollo · Perfil profesional')
@@ -541,7 +572,7 @@ def ranking_page():
 def research_page():
     st.subheader('Research Lab · Ciclo VIP')
     st.write('Dos líneas de investigación complementarias, con la misma importancia dentro del ciclo de vida. La evidencia actual y las oportunidades de mejora se interpretan por separado.')
-    tc,tr=st.tabs(['♠ Churn Intelligence','♦ Reactivation Intelligence'])
+    tc,tr=st.tabs(['♠ Churn VIP Intelligence','♦ Reactivation VIP Intelligence'])
     with tc:
         st.markdown('''<div class="research"><div class="eyebrow">EVIDENCIA ACTUAL</div><h3>♠ Pérdida de calificación VIP</h3><p>La fuente registra directamente el comportamiento durante los meses VIP. Esta mayor disponibilidad de información y una clase positiva más frecuente favorecen el estudio de la pérdida de calificación.</p></div>''',unsafe_allow_html=True)
         c=json.loads((ROOT/'metricas_churn.json').read_text())
@@ -572,7 +603,7 @@ def metrics_page():
     c=json.loads((ROOT/'metricas_churn.json').read_text()); r=json.loads((ROOT/'metricas_reactivacion.json').read_text())['test_retrospectivo']
     st.subheader('Evaluación de dos transiciones complementarias')
     st.write('Ambos modelos tienen la misma importancia en el proyecto. Churn muestra mayor discriminación con los datos disponibles; reingreso estudia un evento menos frecuente con menor observabilidad durante la ausencia. La evaluación conserva todas las métricas y considera la prevalencia de cada población.')
-    tc,tr=st.tabs(['♠ Churn Intelligence','♦ Reactivation Intelligence'])
+    tc,tr=st.tabs(['♠ Churn VIP Intelligence','♦ Reactivation VIP Intelligence'])
     with tc:
         st.caption('Septiembre · reproducción compatible · evaluación retrospectiva · prevalencia 41,07 %')
         a,b,d=st.columns(3)
@@ -618,13 +649,13 @@ def home_page():
     st.caption('Esquema conceptual de estados observables. Estar fuera del segmento no significa haber dejado de jugar.')
     a,b=st.columns(2)
     with a:
-        tile('♠ Línea analítica 01','Churn Intelligence','Votación soft · pérdida de calificación VIP')
+        tile('♠ Línea analítica 01','Churn VIP Intelligence','Votación soft · pérdida de calificación VIP')
         st.markdown('**Mayor capacidad predictiva actual**')
         st.write('La actividad del mes VIP es observable: frecuencia, recencia, variables económicas y evolución histórica. Esto favorece el aprendizaje de patrones asociados a la pérdida de calificación.')
         tile('Recall · evaluación retrospectiva','79,7 %','Cobertura de pérdidas VIP observadas')
         st.caption('Prevalencia: 41,07 % · 414 eventos de 1.008 registros evaluados.')
     with b:
-        tile('♦ Línea analítica 02','Reactivation Intelligence','Regresión logística · reingreso VIP')
+        tile('♦ Línea analítica 02','Reactivation VIP Intelligence','Regresión logística · reingreso VIP')
         st.markdown('**Mayor margen de investigación futura**')
         st.write('El retorno es menos frecuente y la actividad durante la ausencia no es observable. Aun con esta restricción, el modelo encuentra una señal de ordenamiento que merece mayor investigación.')
         tile('Lift · Top 5 % retrospectivo','3,06x','Concentración de reingresos frente a la referencia')
@@ -668,8 +699,8 @@ def team_profile_page(person):
 
 if active_person in TEAM_PROFILES: team_profile_page(active_person)
 elif section=='Inicio · Ciclo de vida': home_page()
-elif section=='Churn Intelligence': page_model('churn')
-elif section=='Reactivation Intelligence': page_model('reactivacion')
+elif section=='Churn VIP Intelligence': page_model('churn')
+elif section=='Reactivation VIP Intelligence': page_model('reactivacion')
 elif section=='Research Lab · Ciclo VIP': research_page()
 elif section=='Development Roadmap': roadmap_page()
 else: metrics_page()
