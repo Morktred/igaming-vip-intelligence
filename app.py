@@ -36,6 +36,42 @@ st.markdown('''<style>
 .stButton>button,.stFormSubmitButton>button {border:1px solid #d7b66f!important;background:#d7b66f!important;color:#101710!important;font-weight:700!important;border-radius:9px!important;}
 hr {border-color:#344237!important;}
 .life {display:flex;align-items:stretch;gap:12px;flex-wrap:wrap;margin:14px 0;} .node {flex:1;min-width:140px;border:1px solid #74613a;background:#172820;border-radius:14px;padding:20px;text-align:center;} .node strong {font-family:Georgia,serif;font-size:24px;color:#e7c67f;} .node p {font-size:12px;color:#bbc7b9;margin:8px 0 0;} .arrow {align-self:center;color:#d8b974;font-size:20px;text-align:center;} .arrow small {display:block;font-size:10px;} .research {border:1px solid #74613a;border-radius:14px;padding:22px;background:linear-gradient(110deg,#172e24,#1e251a);margin:12px 0 20px;} .research h3 {color:#e7c67f;margin:4px 0;} .research p {color:#bbc7b9;margin:8px 0;} .footer {color:#aab5a8;font-size:11px;border-top:1px solid #3c493e;margin-top:32px;padding-top:14px;letter-spacing:.4px;}
+.profile-head {display:flex;align-items:center;gap:22px;flex-wrap:wrap;border:1px solid #74613a;border-radius:18px;padding:30px;background:linear-gradient(120deg,#172e24,#121d19);margin:8px 0 22px;}
+.profile-initials {width:88px;height:88px;flex:0 0 88px;display:grid;place-items:center;border-radius:50%;border:1px solid #b49a61;background:#202c23;color:#e7c67f;font-family:Georgia,serif;font-size:31px;letter-spacing:1px;}
+.profile-head h2 {color:#f5e5ba;font-family:Georgia,serif;font-weight:500;font-size:clamp(24px,3vw,37px);margin:5px 0;}
+.profile-head p {color:#bbc7b9;margin:5px 0;font-size:15px;}
+.profile-interest {border:1px solid #435044;background:#172820;padding:13px 16px;border-radius:10px;color:#e7c67f;margin:6px 0;font-size:15px;}
+/* Team navigation: native buttons, styled as compact professional profile cards. */
+.st-key-team_footer .stButton>button {background:transparent!important;border:0!important;color:#e7c67f!important;box-shadow:none!important;text-decoration:underline;text-underline-offset:4px;padding:0!important;min-height:30px;justify-content:flex-start!important;font-weight:600!important;}
+.st-key-team_footer .stButton>button:hover {color:#fff3d0!important;}
+[data-testid="stSidebar"] .st-key-team_card_daniel button,
+[data-testid="stSidebar"] .st-key-team_card_julian button {
+    display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;
+    background:transparent!important;border:1px solid transparent!important;border-radius:11px!important;
+    padding:10px 8px!important;min-height:66px!important;width:100%!important;
+    color:#f5e5ba!important;text-align:left!important;box-shadow:none!important;
+}
+[data-testid="stSidebar"] .st-key-team_card_daniel button:hover,
+[data-testid="stSidebar"] .st-key-team_card_julian button:hover {background:#172820!important;border-color:#74613a!important;}
+[data-testid="stSidebar"] .st-key-team_card_daniel button:focus-visible,
+[data-testid="stSidebar"] .st-key-team_card_julian button:focus-visible {outline:2px solid #d8b974!important;outline-offset:2px!important;}
+[data-testid="stSidebar"] .st-key-team_card_daniel button::before,
+[data-testid="stSidebar"] .st-key-team_card_julian button::before {
+    display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border-radius:50%;
+    border:1px solid #74613a;background:#26382b;color:#e7c67f;font-size:13px;font-weight:600;
+}
+[data-testid="stSidebar"] .st-key-team_card_daniel button::before {content:"DH";}
+[data-testid="stSidebar"] .st-key-team_card_julian button::before {content:"JV";}
+[data-testid="stSidebar"] .st-key-team_card_daniel button::after,
+[data-testid="stSidebar"] .st-key-team_card_julian button::after {content:"›";color:#d8b974;font-size:22px;line-height:1;margin-left:auto;flex:0 0 12px;}
+[data-testid="stSidebar"] .st-key-team_card_daniel button [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] .st-key-team_card_julian button [data-testid="stMarkdownContainer"] {flex:1;min-width:0;text-align:left;}
+[data-testid="stSidebar"] .st-key-team_card_daniel button p,
+[data-testid="stSidebar"] .st-key-team_card_julian button p {margin:0!important;text-align:left!important;font-size:14px!important;font-weight:600!important;line-height:1.35!important;color:#f5e5ba!important;}
+[data-testid="stSidebar"] .st-key-team_card_daniel button p::after,
+[data-testid="stSidebar"] .st-key-team_card_julian button p::after {display:block;color:#aab5a8;font-size:12px;font-weight:400;margin-top:3px;}
+[data-testid="stSidebar"] .st-key-team_card_daniel button p::after {content:"Economista";}
+[data-testid="stSidebar"] .st-key-team_card_julian button p::after {content:"Estadístico";}
 </style>''',unsafe_allow_html=True)
 
 @st.cache_resource
@@ -47,18 +83,53 @@ def tile(label,value,note):
 def hero(section):
     st.markdown(f'''<div class="hero"><div class="suits">♠ ♥ ♣ ♦</div><div class="eyebrow">IGAMING · PREDICTIVE ANALYTICS</div><h1>VIP Intelligence</h1><p>{html.escape(section)} · Modelos predictivos para el estudio de transiciones del segmento VIP en iGaming.</p></div>''',unsafe_allow_html=True)
 
+# Professional profile pages are separate from the analytical navigation.
+TEAM_PROFILES = {
+    'daniel': {
+        'name': 'Edwin Daniel Holguín Ángel', 'short': 'Daniel Holguín', 'initials': 'DH',
+        'profession': 'Economista', 'university': 'Universidad de Antioquia',
+        'interests': ['Macroeconomía', 'Econometría', 'Análisis de mercado'],
+        'bio': 'Economista de la Universidad de Antioquia, con intereses en el estudio de la economía agregada, la aplicación de métodos econométricos y el análisis de mercados.',
+        'role': 'Co-desarrollador de VIP Intelligence'
+    },
+    'julian': {
+        'name': 'Julián Vega Castellón', 'short': 'Julián Vega', 'initials': 'JV',
+        'profession': 'Estadístico', 'university': 'Universidad de Antioquia',
+        'interests': ['Estadística aplicada', 'Análisis de mercado'],
+        'bio': 'Estadístico de la Universidad de Antioquia, con intereses en la aplicación de métodos estadísticos al estudio de datos y al análisis de mercados.',
+        'role': 'Co-desarrollador de VIP Intelligence'
+    }
+}
+
+def open_team_profile(person):
+    st.session_state['team_profile_active'] = person
+
+
+def close_team_profile():
+    st.session_state.pop('team_profile_active', None)
+
+
 with st.sidebar:
     st.markdown('### ♠ VIP INTELLIGENCE')
     st.caption('MACHINE LEARNING / VIP LIFECYCLE')
-    section=st.radio('Navegación',['Inicio · Ciclo de vida','Churn Intelligence','Reactivation Intelligence','Research Lab · Ciclo VIP','Evaluación y metodología','Development Roadmap'],label_visibility='collapsed')
+    section=st.radio('Navegación',['Inicio · Ciclo de vida','Churn Intelligence','Reactivation Intelligence','Research Lab · Ciclo VIP','Evaluación y metodología','Development Roadmap'],label_visibility='collapsed',key='vip_main_navigation',on_change=close_team_profile)
     st.divider()
     st.caption('EQUIPO DE DESARROLLO')
-    st.markdown('**Daniel Holguin** · Reactivación VIP')
-    st.markdown('**Julián Vega** · Churn VIP')
+    for person in ('daniel', 'julian'):
+        member = TEAM_PROFILES[person]
+        with st.container(key=f'team_card_{person}'):
+            st.button(member['short'],key=f'team_sidebar_{person}',on_click=open_team_profile,
+                      args=(person,),use_container_width=True,
+                      help=f"{member['profession']} · Ver perfil profesional")
+    st.caption('Economía · Estadística · Ciencia de Datos')
     st.divider()
     st.caption('Demostración técnica · perfiles ficticios. No ingresar datos personales ni información confidencial.')
 
-hero(section)
+active_person = st.session_state.get('team_profile_active')
+if active_person in TEAM_PROFILES:
+    hero('Equipo de desarrollo · Perfil profesional')
+else:
+    hero(section)
 
 # Presentation groups; all variables required by the serialized estimators are present.
 GROUPS={
@@ -500,10 +571,44 @@ def home_page():
     st.write('Explora ambos modelos mediante predicción manual, perfiles ficticios completos y sensibilidad. Research Lab reúne las evidencias y las líneas futuras; Evaluación y metodología conserva todas las métricas y limitaciones.')
     st.info('Prototipo de investigación, no plataforma de apuestas. Scores no calibrados; no ingresar información confidencial ni utilizar para decisiones sobre personas.')
 
-if section=='Inicio · Ciclo de vida': home_page()
+def team_profile_page(person):
+    profile = TEAM_PROFILES[person]
+    st.button('← Volver a la plataforma',key='team_back',on_click=close_team_profile)
+    st.markdown(f'''<div class="profile-head">
+      <div class="profile-initials">{html.escape(profile['initials'])}</div>
+      <div><div class="eyebrow">EQUIPO DE DESARROLLO · PERFIL PROFESIONAL</div>
+      <h2>{html.escape(profile['name'])}</h2>
+      <p>{html.escape(profile['profession'])} · {html.escape(profile['university'])}</p></div>
+      </div>''',unsafe_allow_html=True)
+    a,b=st.columns([3,2])
+    with a:
+        st.subheader('Perfil profesional')
+        st.write(profile['bio'])
+        st.subheader('Participación en VIP Intelligence')
+        tile('Equipo de desarrollo',profile['role'],'Iniciativa colaborativa que integra economía, estadística y ciencia de datos para estudiar el ciclo de vida VIP mediante aprendizaje automático.')
+    with b:
+        st.subheader('Formación')
+        tile('Título profesional',profile['profession'],profile['university'])
+        st.subheader('Áreas de interés')
+        for interest in profile['interests']:
+            st.markdown(f'<div class="profile-interest">{html.escape(interest)}</div>',unsafe_allow_html=True)
+    st.divider()
+    st.caption('VIP Intelligence integra perspectivas de economía, estadística y ciencia de datos para estudiar el ciclo de vida del segmento VIP.')
+    other = 'julian' if person == 'daniel' else 'daniel'
+    st.button('Ver perfil de '+TEAM_PROFILES[other]['short'],key='team_other',on_click=open_team_profile,args=(other,))
+
+
+if active_person in TEAM_PROFILES: team_profile_page(active_person)
+elif section=='Inicio · Ciclo de vida': home_page()
 elif section=='Churn Intelligence': page_model('churn')
 elif section=='Reactivation Intelligence': page_model('reactivacion')
 elif section=='Research Lab · Ciclo VIP': research_page()
 elif section=='Development Roadmap': roadmap_page()
 else: metrics_page()
-st.markdown('<div class="footer">VIP INTELLIGENCE · DANIEL HOLGUIN &amp; JULIÁN VEGA · MACHINE LEARNING</div>',unsafe_allow_html=True)
+with st.container(key='team_footer'):
+    st.markdown('<div class="footer">VIP INTELLIGENCE · EQUIPO DE DESARROLLO · MACHINE LEARNING</div>',unsafe_allow_html=True)
+    a,b=st.columns(2)
+    with a:
+        st.button('Daniel Holguín',key='team_footer_daniel',on_click=open_team_profile,args=('daniel',))
+    with b:
+        st.button('Julián Vega',key='team_footer_julian',on_click=open_team_profile,args=('julian',))
