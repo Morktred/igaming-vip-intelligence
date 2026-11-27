@@ -372,6 +372,18 @@ def synthetic_profiles(kind):
                 deposito_mes=800., retiro_mes=400., ggr_dep_mes=60., ggr_slot_mes=40.,
                 ggr_live_mes=0., ggr_virt_mes=0., bono_total_mes=20., delta_dias_activos=-12,
                 delta_deposito=-1800., delta_ggr=-320., cambio_nivel='descendio')),
+            'D · VIP reciente': ('Perfil ficticio con dos meses VIP, actividad frecuente y ascenso de nivel.', dict(d,
+                nivel_vip='plata', antiguedad_meses=2, dias_activos_mes=20, recencia_fin_mes=3,
+                tickets_mes=110, spins_mes=400, apuesta_dep_mes=9000., apuesta_casino_mes=11000.,
+                deposito_mes=3200., retiro_mes=950., ggr_dep_mes=220., ggr_slot_mes=210.,
+                ggr_live_mes=0., ggr_virt_mes=0., bono_total_mes=80., delta_dias_activos=4,
+                delta_deposito=600., delta_ggr=90., cambio_nivel='ascendio')),
+            'E · Historial estable': ('Perfil ficticio con nivel oro y un historial de cinco meses, con actividad regular.', dict(d,
+                nivel_vip='oro', antiguedad_meses=5, dias_activos_mes=16, recencia_fin_mes=6,
+                tickets_mes=70, spins_mes=350, apuesta_dep_mes=9500., apuesta_casino_mes=10000.,
+                deposito_mes=2900., retiro_mes=1000., ggr_dep_mes=190., ggr_slot_mes=160.,
+                ggr_live_mes=0., ggr_virt_mes=0., bono_total_mes=70., delta_dias_activos=0,
+                delta_deposito=0., delta_ggr=0., cambio_nivel='se_mantuvo')),
         }
     return {
         'A · Ausencia prolongada': ('Dos meses VIP consecutivos observados antes de una ausencia de cuatro meses.', dict(d,
@@ -398,6 +410,26 @@ def synthetic_profiles(kind):
             meses_fuera_vip=1, ultimo_nivel_vip='plata', nivel_vip_max_historico='plata',
             meses_vip_historicos=4, racha_vip_previa=2, reactivaciones_previas=1,
             cambio_nivel_ultimo_mes='se_mantuvo')),
+        'D · Ausencia reciente': ('Tres meses VIP consecutivos y un mes fuera del segmento, con actividad histórica moderada.', dict(d,
+            meses_fuera_vip=1, ultimo_nivel_vip='bronce', nivel_vip_max_historico='bronce',
+            meses_vip_historicos=3, racha_vip_previa=3, reactivaciones_previas=0,
+            dias_activos_ultimo_mes=12, recencia_fin_ultimo_mes=8, tickets_ultimo_mes=55,
+            spins_ultimo_mes=180, apuesta_total_ultimo_mes=9000., deposito_ultimo_mes=1800.,
+            retiro_ultimo_mes=650., ggr_general_ultimo_mes=200., bono_total_ultimo_mes=50.,
+            cambio_nivel_ultimo_mes='se_mantuvo', delta_dias_activos_ultimo_mes=-2,
+            delta_deposito_ultimo_mes=-200., delta_ggr_ultimo_mes=-50.,
+            deposito_promedio_historico=2000., ggr_promedio_historico=250.,
+            apuesta_promedio_historico=10500., bono_promedio_historico=60., dias_activos_promedio_historico=14.)),
+        'E · Histórico de nivel oro': ('Cuatro meses VIP, un reingreso anterior y dos meses de ausencia.', dict(d,
+            meses_fuera_vip=2, ultimo_nivel_vip='oro', nivel_vip_max_historico='oro',
+            meses_vip_historicos=4, racha_vip_previa=2, reactivaciones_previas=1,
+            dias_activos_ultimo_mes=20, recencia_fin_ultimo_mes=4, tickets_ultimo_mes=100,
+            spins_ultimo_mes=500, apuesta_total_ultimo_mes=26000., deposito_ultimo_mes=4200.,
+            retiro_ultimo_mes=1600., ggr_general_ultimo_mes=550., bono_total_ultimo_mes=120.,
+            cambio_nivel_ultimo_mes='se_mantuvo', delta_dias_activos_ultimo_mes=1,
+            delta_deposito_ultimo_mes=200., delta_ggr_ultimo_mes=50.,
+            deposito_promedio_historico=4000., ggr_promedio_historico=500.,
+            apuesta_promedio_historico=24000., bono_promedio_historico=110., dias_activos_promedio_historico=19.)),
     }
 
 def load_manual_profile(kind,profile):
@@ -420,25 +452,63 @@ def profile_table(kind,bundle,profiles):
             rows.append(row)
     return pd.DataFrame(rows)
 
+def quick_ranges(kind,base):
+    # Discrete options drawn from the existing coherence-aware sensitivity ranges.
+    ranges=sensitivity_ranges(kind,base)
+    fields=('recencia_fin_mes','deposito_mes','ggr_slot_mes') if kind=='churn' else (
+        'meses_fuera_vip','recencia_fin_ultimo_mes','deposito_ultimo_mes')
+    return {f:sorted(set(ranges[f]+[base[f]])) for f in fields if f in ranges}
+
+
+def reset_quick_profile(kind):
+    key=f'quick_revision_{kind}'
+    st.session_state[key]=st.session_state.get(key,0)+1
+
+
 def profiles_page(kind,bundle):
-    st.subheader('Comparación de perfiles sintéticos')
-    st.write('Cada perfil contiene todos los atributos del modelo. Los scores se calculan al abrir esta sección con el estimador entrenado; no son valores prefijados. Los casos son ilustrativos, no representan jugadores reales.')
+    st.subheader('Explora cinco perfiles sintéticos')
+    st.write('Empieza con un ejemplo completo y ficticio. Puedes cambiar algunos atributos principales sin completar todo el formulario. Los demás atributos conservan los valores del perfil elegido; todos participan en el cálculo.')
     profiles=synthetic_profiles(kind)
     results={name:predict(kind,bundle,values) for name,(_,values) in profiles.items()}
-    for col,(name,(description,values)) in zip(st.columns(3),profiles.items()):
+    items=list(profiles.items())
+    for offset in (0,3):
+        for col,(name,(description,values)) in zip(st.columns(3 if offset==0 else 2),items[offset:offset+3]):
+            with col:
+                r=results[name]
+                tile(name,f"{r['score']:.2%}",description)
+                st.caption(f"Clase {r['clase']} · umbral {r['umbral']:.2%}")
+    st.divider()
+    st.subheader('Personalización rápida')
+    name=st.selectbox('Selecciona un perfil ficticio',list(profiles),key=f'profile_detail_{kind}')
+    description,base=profiles[name]
+    st.caption(description)
+    st.button('Restablecer parámetros del perfil',key=f'reset_quick_{kind}',on_click=reset_quick_profile,args=(kind,))
+    revision=st.session_state.get(f'quick_revision_{kind}',0)
+    ranges=quick_ranges(kind,base)
+    edited=dict(base)
+    for col,(f,options) in zip(st.columns(len(ranges)),ranges.items()):
         with col:
-            r=results[name]
-            tile(name,f"{r['score']:.2%}",description)
-            st.caption(f"Clase {r['clase']} · umbral {r['umbral']:.2%}")
-    comparison=pd.DataFrame([{'Perfil':name,'Score (%)':r['score']*100,'Umbral (%)':r['umbral']*100} for name,r in results.items()])
-    st.bar_chart(comparison,x='Perfil',y='Score (%)',color='#D8B974',use_container_width=True)
-    st.dataframe(comparison.round(2),hide_index=True,use_container_width=True)
-    with st.expander('Ver todos los atributos de los tres perfiles'):
-        st.dataframe(profile_table(kind,bundle,{name:r['entrada'].iloc[0].to_dict() for name,r in results.items()}),hide_index=True,use_container_width=True)
-    name=st.selectbox('Selecciona un perfil para consultar su resultado completo',list(profiles),key=f'profile_detail_{kind}')
-    score_panel(kind,results[name])
-    st.button('Cargar este perfil en predicción manual',key=f'load_profile_{kind}',on_click=load_manual_profile,args=(kind,profiles[name][1]))
-    st.caption('Los escenarios no son una evaluación de desempeño ni una recomendación de intervención. Solo comprueban la inferencia con entradas ficticias.')
+            # Native selectors preserve the original numeric units and restrict scenarios.
+            edited[f]=st.selectbox(LABELS[f],options,index=options.index(base[f]),
+                key=f'quick_{kind}_{revision}_{name}_{f}',format_func=lambda v:f'{v:g}')
+    st.caption(f'Parámetros editables: {len(ranges)} de {len(bundle["features"])}. Los {len(bundle["features"])-len(ranges)} restantes conservan el perfil de referencia. Los valores disponibles son escenarios ficticios acotados; para editar todo, usa Predicción manual.')
+    try:
+        current=predict(kind,bundle,edited)
+    except ValueError as e:
+        st.error(str(e))
+        return
+    a,b=st.columns(2)
+    with a: tile('Score original',f"{results[name]['score']:.2%}",'Perfil precargado')
+    with b: tile('Variación del score',f"{100*(current['score']-results[name]['score']):+.2f} pp",'Respecto al perfil original')
+    score_panel(kind,current)
+    st.button('Continuar con la predicción manual completa',key=f'load_profile_{kind}',on_click=load_manual_profile,args=(kind,edited),use_container_width=True)
+    with st.expander('Comparar los cinco perfiles originales'):
+        comparison=pd.DataFrame([{'Perfil':n,'Score (%)':r['score']*100,'Umbral (%)':r['umbral']*100} for n,r in results.items()])
+        st.bar_chart(comparison,x='Perfil',y='Score (%)',color='#D8B974',use_container_width=True)
+        st.dataframe(comparison.round(2),hide_index=True,use_container_width=True)
+    with st.expander('Consultar los atributos completos de los cinco perfiles'):
+        st.dataframe(profile_table(kind,bundle,{n:r['entrada'].iloc[0].to_dict() for n,r in results.items()}),hide_index=True,use_container_width=True)
+    st.caption('Los escenarios no constituyen una evaluación de desempeño ni recomendaciones de intervención. Solo comprueban la inferencia con entradas ficticias.')
 
 # One-at-a-time sensitivity: intentionally restrict to numeric variables that
 # can vary independently under simple domain and calendar constraints.
@@ -521,7 +591,7 @@ def page_model(kind):
     with c1: tile('Algoritmo','Votación soft' if is_churn else 'Regresión logística','Ensamble de tres estimadores' if is_churn else 'Clasificador lineal')
     with c2: tile('Atributos',len(bundle['features']),'Variables de entrada')
     with c3: tile('Umbral de decisión',f"{bundle['umbral']*100:.2f}%",'Determinado con datos de desarrollo')
-    mode=st.radio('Modalidad de análisis',['Predicción manual','Perfiles sintéticos','Análisis de sensibilidad'],horizontal=True,key=f'mode_{kind}')
+    mode=st.radio('Modalidad de análisis',['Perfiles sintéticos','Predicción manual','Análisis de sensibilidad'],horizontal=True,key=f'mode_{kind}')
     if mode=='Predicción manual':
         if st.session_state.pop(f'profile_notice_{kind}',False): st.success('Perfil completo cargado. Puedes modificar sus atributos y calcular el score.')
         manual_page(kind,bundle)
@@ -538,7 +608,7 @@ def manual_page(kind,bundle):
     defaults = st.session_state.get(f'manual_defaults_{kind}', DEFAULTS[kind])
     st.caption('El cálculo usa todos los atributos, incluso los grupos cerrados. Los valores son ficticios; los importes usan las unidades de la fuente. Los campos se mantienen en su escala original: el modelo aplica sus propias transformaciones.')
     if is_churn: st.caption('Si no venía del mes anterior, se asigna cambio de nivel no aplicable y los deltas se codifican en cero según el preprocesamiento del modelo.')
-    if is_churn: st.caption('El origen temporal de perfilado está pendiente de verificación; resultado exclusivamente demostrativo.')
+    if is_churn: st.caption('Según la confirmación del responsable del análisis, perfilado se calcula con información disponible hasta el cierre del mes M, sin meses posteriores. Resultado exclusivamente demostrativo.')
     else: st.caption('Si la racha previa es de un mes, los tres deltas se tratan como faltantes estructurales. No se simula actividad durante la ausencia.')
     with st.form(f'form_{kind}_{revision}'):
         values={}
@@ -597,7 +667,7 @@ def research_page():
         with a: tile('Recall',f"{c['recall']:.1%}",'Cobertura de pérdidas observadas')
         with b: tile('ROC-AUC',f"{c['roc_auc']:.3f}",'Discriminación retrospectiva')
         with d: tile('Prevalencia','41,07 %','Septiembre · 414 de 1.008 registros')
-        st.write('Churn presenta mayor capacidad de discriminación y clasificación con los datos actuales. Esto no demuestra que una intervención evite una pérdida de calificación. Persisten falsos positivos, falta verificar la disponibilidad temporal de perfilado y se requiere validación prospectiva.')
+        st.write('Churn presenta mayor capacidad de discriminación y clasificación con los datos actuales. Esto no demuestra que una intervención evite una pérdida de calificación. Persisten falsos positivos y se requiere validación prospectiva. Según la confirmación del responsable del análisis, perfilado se calcula al cierre de cada mes, sin información posterior.')
         st.subheader('Próximas líneas de estudio')
         st.write('Ampliar el horizonte temporal, estudiar estabilidad por nivel VIP, verificar la procedencia temporal de los atributos y evaluar calibración y cambios en la distribución de los datos.')
     with tr:
@@ -630,7 +700,7 @@ def metrics_page():
         a,b=st.columns(2)
         with a: st.metric('Precisión',f"{c['precision']:.1%}")
         with b: st.metric('F1',f"{c['f1']:.3f}")
-        st.write('La cobertura es alta en esta evaluación, pero existen falsos positivos y falta confirmar la disponibilidad temporal de perfilado.')
+        st.write('La cobertura es alta en esta evaluación, pero existen falsos positivos. El responsable del análisis confirmó que perfilado se calcula hasta el cierre de cada mes, sin información futura.')
     with tr:
         st.caption('Agosto · evaluación retrospectiva · prevalencia 9,21 %')
         a,b,d=st.columns(3)
@@ -646,14 +716,14 @@ def metrics_page():
     st.subheader('Alcance metodológico')
     st.write('Churn: votación soft con LR, MLP y Gradient Boosting; SMOTENC durante entrenamiento. Reactivación: regresión logística sin sobremuestreo; antiguos VIP ausentes en M. Ambos estudian calificación VIP en M+1, no abandono o retorno al juego.')
     st.write('Churn se reprodujo con hiperparámetros y umbral originales en scikit-learn 1.8.0. Las métricas corresponden a entrenamiento enero–agosto y evaluación septiembre; el artefacto desplegado se ajustó con enero–septiembre y no conserva el remuestreador ajustado. Reactivación conserva el modelo del notebook: entrenamiento febrero–junio, validación julio y evaluación retrospectiva agosto.')
-    st.warning('Limitaciones: origen temporal de perfilado pendiente en churn; agosto ya consultado; calibración no demostrada; histórico limitado; poca evidencia en Oro y Diamante. No es un sistema operativo validado.')
+    st.warning('Limitaciones: agosto ya consultado; calibración no demostrada; histórico limitado; poca evidencia en Oro y Diamante. No es un sistema operativo validado.')
     st.markdown('**Privacidad y juego responsable:** perfiles ficticios, sin registros individuales ni recomendaciones de contacto o incentivos. Los artefactos requieren autorización del titular de los datos.')
 
 
 def roadmap_page():
     st.subheader('Development Roadmap')
     st.caption('Propuestas de evolución, no compromisos ni funcionalidades productivas.')
-    stages=[('V1.0 · Fundamentos predictivos','Implementado en código','Dos análisis supervisados, validación temporal y prototipo web.'),('V1.1 · Experimentación y explicabilidad','Implementado en código','Predicción manual, perfiles sintéticos, sensibilidad local y ranking histórico.'),('V2.0 · Evolución de ambos modelos','Investigación propuesta','Churn: verificar atributos temporales, estabilidad y calibración. Reingreso: ampliar el histórico y la información autorizada disponible durante la ausencia; estudiar la señal de retorno.'),('V2.1 · Time-to-event Analytics','Investigación propuesta','Analizar tiempo hasta pérdida o reingreso VIP mediante métodos de supervivencia y censura.'),('V3.0 · Model Reliability','Investigación propuesta','Validación prospectiva, calibración, drift, privacidad y juego responsable.')]
+    stages=[('V1.0 · Fundamentos predictivos','Implementado en código','Dos análisis supervisados, validación temporal y prototipo web.'),('V1.1 · Experimentación y explicabilidad','Implementado en código','Cinco perfiles sintéticos por modelo con personalización rápida, predicción manual, sensibilidad local y ranking histórico.'),('V2.0 · Evolución de ambos modelos','Investigación propuesta','Churn: verificar atributos temporales, estabilidad y calibración. Reingreso: ampliar el histórico y la información autorizada disponible durante la ausencia; estudiar la señal de retorno.'),('V2.1 · Time-to-event Analytics','Investigación propuesta','Analizar tiempo hasta pérdida o reingreso VIP mediante métodos de supervivencia y censura.'),('V3.0 · Model Reliability','Investigación propuesta','Validación prospectiva, calibración, drift, privacidad y juego responsable.')]
     for title,status,desc in stages:
         st.markdown(f'<div class="tile"><small>{html.escape(status)}</small><div class="value" style="font-size:23px">{html.escape(title)}</div><p>{html.escape(desc)}</p></div>',unsafe_allow_html=True)
     st.caption('La agenda de investigación es futura; el módulo informativo está incluido en esta versión. La última interfaz requiere verificación en Streamlit Cloud.')
@@ -683,7 +753,7 @@ def home_page():
     a,b=st.columns(2)
     with a: tile('Churn · continuidad','Validación y fiabilidad','Verificar atributos temporales, estabilidad, calibración y generalización.')
     with b: tile('Reingreso · continuidad','Ampliación del conocimiento','Profundizar en el histórico y la ausencia, con fuentes autorizadas y validación futura.')
-    st.write('Explora ambos modelos mediante predicción manual, perfiles ficticios completos y sensibilidad. Research Lab reúne las evidencias y las líneas futuras; Evaluación y metodología conserva todas las métricas y limitaciones.')
+    st.write('Explora ambos modelos mediante cinco perfiles ficticios completos, personalización rápida, predicción manual y sensibilidad. Research Lab reúne las evidencias y las líneas futuras; Evaluación y metodología conserva todas las métricas y limitaciones.')
     st.info('Prototipo de investigación, no plataforma de apuestas. Scores no calibrados; no ingresar información confidencial ni utilizar para decisiones sobre personas.')
 
 def team_profile_page(person):
