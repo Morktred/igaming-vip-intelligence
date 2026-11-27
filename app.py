@@ -140,6 +140,8 @@ hr {border-color:#344237!important;}
 
 [data-testid="stSidebar"] .st-key-sidebar_notes [data-testid="stCaptionContainer"] p {font-size:11px;line-height:1.45;color:#aab5a8;}
 /* Native layout containers own all spacing; small screens retain scrolling if needed. */
+.profile-interest .interest-time-series {mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%203v18h18M6%2015l4-5%204%203%206-7%22%2F%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%226%22%20r%3D%221%22%2F%3E%3C%2Fsvg%3E");-webkit-mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%203v18h18M6%2015l4-5%204%203%206-7%22%2F%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%226%22%20r%3D%221%22%2F%3E%3C%2Fsvg%3E");}
+.profile-interest .interest-computing {mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%2218%22%20height%3D%2213%22%20rx%3D%222%22%2F%3E%3Cpath%20d%3D%22M8%2021h8m-4-4v4m-3-13-3%203%203%203m6-6%203%203-3%203%22%2F%3E%3C%2Fsvg%3E");-webkit-mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%2218%22%20height%3D%2213%22%20rx%3D%222%22%2F%3E%3Cpath%20d%3D%22M8%2021h8m-4-4v4m-3-13-3%203%203%203m6-6%203%203-3%203%22%2F%3E%3C%2Fsvg%3E");}
 </style>''',unsafe_allow_html=True)
 
 @st.cache_resource
@@ -157,14 +159,14 @@ TEAM_PROFILES = {
         'name': 'Edwin Daniel Holguín Ángel', 'short': 'Daniel Holguín', 'initials': 'DH',
         'profession': 'Economista', 'university': 'Universidad de Antioquia',
         'interests': ['Macroeconomía', 'Econometría', 'Análisis de mercado'],
-        'bio': 'Economista de la Universidad de Antioquia, con intereses en el estudio de la economía agregada, la aplicación de métodos econométricos y el análisis de mercados.',
+        'bio': 'Economista de la Universidad de Antioquia, con interés en la macroeconomía, la econometría y el análisis de mercados, así como en la aplicación de métodos cuantitativos al estudio de fenómenos económicos.',
         'role': 'Co-desarrollador de VIP Intelligence'
     },
     'julian': {
         'name': 'Julián Vega Castellón', 'short': 'Julián Vega', 'initials': 'JV',
         'profession': 'Estadístico', 'university': 'Universidad de Antioquia',
-        'interests': ['Estadística aplicada', 'Análisis de mercado'],
-        'bio': 'Estadístico de la Universidad de Antioquia, con intereses en la aplicación de métodos estadísticos al estudio de datos y al análisis de mercados.',
+        'interests': ['Estadística aplicada', 'Series de tiempo', 'Ciencias de la computación'],
+        'bio': 'Estadístico de la Universidad de Antioquia, con interés en la estadística aplicada, el análisis de series de tiempo y las ciencias de la computación, orientado al estudio de datos mediante métodos cuantitativos y computacionales.',
         'role': 'Co-desarrollador de VIP Intelligence'
     }
 }
@@ -174,6 +176,8 @@ INTEREST_ICONS = {
     'Econometría': 'econometrics',
     'Análisis de mercado': 'market',
     'Estadística aplicada': 'statistics',
+    'Series de tiempo': 'time-series',
+    'Ciencias de la computación': 'computing',
 }
 
 NAV_ITEMS = [
@@ -334,13 +338,20 @@ def field(kind,name,bundle,revision,defaults=None):
     upper=31. if name=='dias_activos_promedio_historico' else None
     return st.number_input(label,min_value=low,max_value=upper,value=float(d),step=1.,format='%.2f',key=key)
 
+def probability_label(kind):
+    return 'Probabilidad estimada de churn VIP' if kind=='churn' else 'Probabilidad estimada de reactivación VIP'
+
+def event_description(kind):
+    return ('Perder la calificación VIP en el mes siguiente (M+1), no abandonar la plataforma.' if kind=='churn' else 'Volver a calificar como VIP en el mes siguiente (M+1), no necesariamente volver a jugar.')
+
 def score_panel(kind,result):
     s=result['score']*100; u=result['umbral']*100
     positive='Clase 1 · Pérdida de calificación VIP' if kind=='churn' else 'Clase 1 · Reingreso al segmento VIP'
     negative='Clase 0 · No se anticipa pérdida de calificación' if kind=='churn' else 'Clase 0 · No se anticipa reingreso'
     label=positive if result['clase'] else negative
-    st.markdown(f'''<div class="score"><div class="eyebrow">Score del modelo</div><div class="big">{s:.2f}%</div><div class="rail"><div class="fill" style="width:{s:.6f}%"></div><div class="marker" style="left:{u:.6f}%"></div></div><div class="range"><span>0%</span><span>Umbral {u:.2f}%</span><span>100%</span></div><div class="class">{html.escape(label)}</div></div>''',unsafe_allow_html=True)
-    st.caption('Score de clasificación sin calibración demostrada. No es una probabilidad garantizada. La línea indica el umbral fijado en el desarrollo del modelo.')
+    st.markdown(f'''<div class="score"><div class="eyebrow">{html.escape(probability_label(kind))}</div><div class="big">{s:.2f}%</div><div class="rail"><div class="fill" style="width:{s:.6f}%"></div><div class="marker" style="left:{u:.6f}%"></div></div><div class="range"><span>0%</span><span>Umbral {u:.2f}%</span><span>100%</span></div><div class="class">{html.escape(label)}</div></div>''',unsafe_allow_html=True)
+    st.write('**Evento estimado:** '+event_description(kind))
+    st.caption('Estimación del modelo sin calibración demostrada; no equivale a una frecuencia real comprobada. La línea indica el umbral de clasificación, no un límite de certeza.')
     st.info('Resultado para un caso hipotético. No autoriza decisiones automatizadas sobre personas. En una aplicación real se requerirían validación adicional, consentimiento, controles de juego responsable y exclusiones pertinentes.')
     with st.expander('Ver entrada que recibió el modelo'):
         st.dataframe(result['entrada'],hide_index=True)
@@ -467,6 +478,8 @@ def reset_quick_profile(kind):
 
 def profiles_page(kind,bundle):
     st.subheader('Explora cinco perfiles sintéticos')
+    st.markdown('**'+probability_label(kind)+'**')
+    st.caption(event_description(kind)+' Todas las estimaciones carecen de calibración demostrada.')
     st.write('Empieza con un ejemplo completo y ficticio. Puedes cambiar algunos atributos principales sin completar todo el formulario. Los demás atributos conservan los valores del perfil elegido; todos participan en el cálculo.')
     profiles=synthetic_profiles(kind)
     results={name:predict(kind,bundle,values) for name,(_,values) in profiles.items()}
@@ -498,13 +511,13 @@ def profiles_page(kind,bundle):
         st.error(str(e))
         return
     a,b=st.columns(2)
-    with a: tile('Score original',f"{results[name]['score']:.2%}",'Perfil precargado')
-    with b: tile('Variación del score',f"{100*(current['score']-results[name]['score']):+.2f} pp",'Respecto al perfil original')
+    with a: tile('Probabilidad estimada original',f"{results[name]['score']:.2%}",'Perfil precargado')
+    with b: tile('Variación de la estimación',f"{100*(current['score']-results[name]['score']):+.2f} pp",'Respecto al perfil original')
     score_panel(kind,current)
     st.button('Continuar con la predicción manual completa',key=f'load_profile_{kind}',on_click=load_manual_profile,args=(kind,edited),use_container_width=True)
     with st.expander('Comparar los cinco perfiles originales'):
-        comparison=pd.DataFrame([{'Perfil':n,'Score (%)':r['score']*100,'Umbral (%)':r['umbral']*100} for n,r in results.items()])
-        st.bar_chart(comparison,x='Perfil',y='Score (%)',color='#D8B974',use_container_width=True)
+        comparison=pd.DataFrame([{'Perfil':n,'Probabilidad estimada (%)':r['score']*100,'Umbral (%)':r['umbral']*100} for n,r in results.items()])
+        st.bar_chart(comparison,x='Perfil',y='Probabilidad estimada (%)',color='#D8B974',use_container_width=True)
         st.dataframe(comparison.round(2),hide_index=True,use_container_width=True)
     with st.expander('Consultar los atributos completos de los cinco perfiles'):
         st.dataframe(profile_table(kind,bundle,{n:r['entrada'].iloc[0].to_dict() for n,r in results.items()}),hide_index=True,use_container_width=True)
@@ -549,12 +562,13 @@ def sensitivity_results(kind,bundle,base,variable,values):
         for f in bundle['features']:
             if f!=variable:
                 assert (pd.isna(before[f]) and pd.isna(after[f])) or before[f]==after[f]
-        rows.append({'Valor':value,'Score (%)':result['score']*100,'Umbral (%)':result['umbral']*100,'Cambio (pp)':(result['score']-original['score'])*100,'Clase':result['clase']})
+        rows.append({'Valor':value,'Probabilidad estimada (%)':result['score']*100,'Umbral (%)':result['umbral']*100,'Cambio (pp)':(result['score']-original['score'])*100,'Clase':result['clase']})
     return original,pd.DataFrame(rows)
 
 def sensitivity_page(kind,bundle):
     st.subheader('Análisis de sensibilidad · una variable a la vez')
-    st.write('Selecciona un perfil ficticio y una variable. El modelo vuelve a calcular el score para cada valor del eje horizontal; todas las demás entradas permanecen constantes. Es una exploración local del modelo, no una estimación causal.')
+    st.caption(probability_label(kind)+' · '+event_description(kind))
+    st.write('Selecciona un perfil ficticio y una variable. El modelo vuelve a calcular la probabilidad estimada para cada valor del eje horizontal; todas las demás entradas permanecen constantes. Es una exploración local del modelo, no una estimación causal.')
     profiles=synthetic_profiles(kind)
     name=st.selectbox('Perfil sintético de referencia',list(profiles),key=f'sensitivity_profile_{kind}')
     description,base=profiles[name]
@@ -563,17 +577,17 @@ def sensitivity_page(kind,bundle):
     variable=st.selectbox('Variable que se modifica',list(ranges),format_func=lambda f:LABELS[f],key=f'sensitivity_variable_{kind}_{name}')
     original,table=sensitivity_results(kind,bundle,base,variable,ranges[variable])
     a,b,c=st.columns(3)
-    with a: tile('Score base',f"{original['score']:.2%}",'Perfil de referencia')
+    with a: tile('Probabilidad estimada base',f"{original['score']:.2%}",'Perfil de referencia')
     with b: tile('Atributos fijos',len(bundle['features'])-1,'Sin modificación')
     with c: tile('Umbral',f"{original['umbral']:.2%}",'Umbral original')
     st.caption(f"Valor base: {base[variable]:g} · Variable analizada: {LABELS[variable]}")
     # Plot with an explicit linear numeric axis, not equally spaced categories.
     import altair as alt
-    long=table.melt(id_vars=['Valor'],value_vars=['Score (%)','Umbral (%)'],var_name='Serie',value_name='Porcentaje')
+    long=table.melt(id_vars=['Valor'],value_vars=['Probabilidad estimada (%)','Umbral (%)'],var_name='Serie',value_name='Porcentaje')
     plot=alt.Chart(long).mark_line(point=True).encode(
         x=alt.X('Valor:Q',title=LABELS[variable],scale=alt.Scale(zero=False)),
-        y=alt.Y('Porcentaje:Q',title='Score (%)',scale=alt.Scale(domain=[0,100])),
-        color=alt.Color('Serie:N',scale=alt.Scale(domain=['Score (%)','Umbral (%)'],range=['#D8B974','#CF806B'])),
+        y=alt.Y('Porcentaje:Q',title='Probabilidad estimada (%)',scale=alt.Scale(domain=[0,100])),
+        color=alt.Color('Serie:N',scale=alt.Scale(domain=['Probabilidad estimada (%)','Umbral (%)'],range=['#D8B974','#CF806B'])),
         tooltip=['Serie:N',alt.Tooltip('Valor:Q'),alt.Tooltip('Porcentaje:Q',format='.2f')]
     ).properties(height=320)
     st.altair_chart(plot,use_container_width=True)
@@ -586,14 +600,15 @@ def page_model(kind):
     bundle=bundle_for(kind)
     is_churn=kind=='churn'
     st.markdown('#### '+('♠ Análisis 01 · Pérdida de calificación VIP' if is_churn else '♦ Análisis 02 · Reingreso al segmento VIP'))
-    st.caption('Mes de referencia M cerrado → resultado en M+1. No se predice abandono total ni retorno al juego.')
+    st.caption('Mes de referencia M cerrado → resultado en M+1. '+event_description(kind))
+    st.caption('Los porcentajes son estimaciones del modelo para la clase positiva; no se ha demostrado su calibración.')
     c1,c2,c3=st.columns(3)
     with c1: tile('Algoritmo','Votación soft' if is_churn else 'Regresión logística','Ensamble de tres estimadores' if is_churn else 'Clasificador lineal')
     with c2: tile('Atributos',len(bundle['features']),'Variables de entrada')
     with c3: tile('Umbral de decisión',f"{bundle['umbral']*100:.2f}%",'Determinado con datos de desarrollo')
     mode=st.radio('Modalidad de análisis',['Perfiles sintéticos','Predicción manual','Análisis de sensibilidad'],horizontal=True,key=f'mode_{kind}')
     if mode=='Predicción manual':
-        if st.session_state.pop(f'profile_notice_{kind}',False): st.success('Perfil completo cargado. Puedes modificar sus atributos y calcular el score.')
+        if st.session_state.pop(f'profile_notice_{kind}',False): st.success('Perfil completo cargado. Puedes modificar sus atributos y calcular la probabilidad estimada.')
         manual_page(kind,bundle)
     elif mode=='Perfiles sintéticos': profiles_page(kind,bundle)
     else: sensitivity_page(kind,bundle)
@@ -604,7 +619,7 @@ def manual_page(kind,bundle):
               on_click=reset_synthetic_example, args=(kind,))
     revision = st.session_state.get(f'form_revision_{kind}', 0)
     if st.session_state.pop(f'reset_notice_{kind}', False):
-        st.success('Ejemplo sintético restablecido. Pulsa Calcular score del modelo para generar un nuevo resultado.')
+        st.success('Ejemplo sintético restablecido. Pulsa Calcular probabilidad estimada para generar un nuevo resultado.')
     defaults = st.session_state.get(f'manual_defaults_{kind}', DEFAULTS[kind])
     st.caption('El cálculo usa todos los atributos, incluso los grupos cerrados. Los valores son ficticios; los importes usan las unidades de la fuente. Los campos se mantienen en su escala original: el modelo aplica sus propias transformaciones.')
     if is_churn: st.caption('Si no venía del mes anterior, se asigna cambio de nivel no aplicable y los deltas se codifican en cero según el preprocesamiento del modelo.')
@@ -617,7 +632,7 @@ def manual_page(kind,bundle):
                 cols=st.columns(3)
                 for j,f in enumerate(fields):
                     with cols[j%3]: values[f]=field(kind,f,bundle,revision,defaults)
-        submitted=st.form_submit_button('Calcular score del modelo',use_container_width=True)
+        submitted=st.form_submit_button('Calcular probabilidad estimada',use_container_width=True)
     if submitted:
         st.session_state[f'manual_defaults_{kind}']=dict(values)
         try: st.session_state[f'result_{kind}']=predict(kind,bundle,values)
@@ -626,9 +641,9 @@ def manual_page(kind,bundle):
     if f'result_{kind}' in st.session_state:
         result=st.session_state[f'result_{kind}']
         if not is_churn and result['entrada']['meses_fuera_vip'].iloc[0] >= 6:
-            st.warning('Duración de ausencia fuera del rango observado en entrenamiento. Este score es una extrapolación y no está validado para ese caso.')
+            st.warning('Duración de ausencia fuera del rango observado en entrenamiento. Esta estimación es una extrapolación y no está validado para ese caso.')
         score_panel(kind,result)
-    else: st.caption('Completa los parámetros o utiliza el ejemplo ficticio precargado y pulsa Calcular score del modelo.')
+    else: st.caption('Completa los parámetros o utiliza el ejemplo ficticio precargado y pulsa Calcular probabilidad estimada.')
 
 
 def ranking_page():
@@ -637,7 +652,7 @@ def ranking_page():
     n, positives = 2323, 214
     baseline = positives / n
     evidence = {5: (117, 33), 10: (233, 58), 20: (465, 85), 30: (697, 116), 50: (1162, 155), 100: (2323, 214)}
-    st.write('Explora cómo se concentran los reingresos VIP observados al ordenar retrospectivamente los registros por su score. No se simula una intervención ni se generan recomendaciones individuales.')
+    st.write('Explora cómo se concentran los reingresos VIP observados al ordenar retrospectivamente los registros por su probabilidad estimada de reactivación (score de ordenamiento). No se simula una intervención ni se generan recomendaciones individuales.')
     pct = st.select_slider('Fracción superior del ranking histórico (%)', options=list(evidence), value=10, key='react_ranking_pct')
     k, tp = evidence[pct]
     precision, recall = tp / k, tp / positives
@@ -654,7 +669,7 @@ def ranking_page():
     with st.expander('Ver tabla completa de evaluación retrospectiva'):
         st.dataframe([{'Fracción superior':f'{f}%', 'Registros':k0, 'Reingresos':t0, 'Precisión':f'{t0/k0:.2%}', 'Recall':f'{t0/positives:.2%}', 'Lift':f'{(t0/k0)/baseline:.2f}x'} for f,(k0,t0) in evidence.items()],hide_index=True,use_container_width=True)
     st.info('AP = 0,193 frente a prevalencia 0,0921 (2,09 veces). Brier = 0,0864 frente a referencia constante 0,0842: la calibración no está demostrada. El ranking describe asociación retrospectiva; no prueba causalidad, incremento de ingresos ni utilidad prospectiva.')
-    st.caption('Fuente: resultados agregados de la evaluación de agosto. No se incluyen registros, scores individuales ni identificadores.')
+    st.caption('Fuente: resultados agregados de la evaluación de agosto. No se incluyen registros, estimaciones individuales ni identificadores.')
 
 def research_page():
     st.subheader('Research Lab · Ciclo VIP')
@@ -754,7 +769,7 @@ def home_page():
     with a: tile('Churn · continuidad','Validación y fiabilidad','Verificar atributos temporales, estabilidad, calibración y generalización.')
     with b: tile('Reingreso · continuidad','Ampliación del conocimiento','Profundizar en el histórico y la ausencia, con fuentes autorizadas y validación futura.')
     st.write('Explora ambos modelos mediante cinco perfiles ficticios completos, personalización rápida, predicción manual y sensibilidad. Research Lab reúne las evidencias y las líneas futuras; Evaluación y metodología conserva todas las métricas y limitaciones.')
-    st.info('Prototipo de investigación, no plataforma de apuestas. Scores no calibrados; no ingresar información confidencial ni utilizar para decisiones sobre personas.')
+    st.info('Prototipo de investigación, no plataforma de apuestas. Probabilidades estimadas sin calibración demostrada; no ingresar información confidencial ni utilizar para decisiones sobre personas.')
 
 def team_profile_page(person):
     profile = TEAM_PROFILES[person]
