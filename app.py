@@ -466,12 +466,49 @@ def profile_table(kind,bundle,profiles):
             rows.append(row)
     return pd.DataFrame(rows)
 
-def quick_ranges(kind,base):
-    # Discrete options drawn from the existing coherence-aware sensitivity ranges.
-    ranges=sensitivity_ranges(kind,base)
-    fields=('recencia_fin_mes','deposito_mes','ggr_slot_mes') if kind=='churn' else (
-        'meses_fuera_vip','recencia_fin_ultimo_mes','deposito_ultimo_mes')
-    return {f:sorted(set(ranges[f]+[base[f]])) for f in fields if f in ranges}
+# Five controls informed by permutation importance in the original notebooks.
+QUICK_FIELDS = {
+    'churn': ('antiguedad_meses','recencia_fin_mes','deposito_mes','ggr_dep_mes','retiro_mes'),
+    'reactivacion': ('meses_vip_historicos','apuesta_promedio_historico','meses_fuera_vip','ggr_promedio_historico','deposito_ultimo_mes'),
+}
+
+def quick_ranges(kind,base,history=None):
+    def money(v,minimum=0.):
+        return sorted(set([float(v)]+[round(max(minimum,v*f),2) for f in (.5,.75,1.,1.25,1.5)]))
+    if kind=='churn':
+        return {
+            'antiguedad_meses': list(range(2 if base['venia_prev']=='si' else 1,10)),
+            'recencia_fin_mes': sensitivity_ranges(kind,base)['recencia_fin_mes'],
+            'deposito_mes': money(base['deposito_mes'],max(0.,base['delta_deposito'])),
+            'ggr_dep_mes': [base['ggr_dep_mes']+d for d in (-200.,-100.,0.,100.,200.)],
+            'retiro_mes': money(base['retiro_mes']),
+        }
+    n0=base['meses_vip_historicos']; r=base['reactivaciones_previas']
+    n=n0 if history is None else int(history)
+    nmax=max(n0,8-base['meses_fuera_vip']-r)
+    v=base['ggr_promedio_historico']
+    return {
+        'meses_vip_historicos': list(range(n0,nmax+1)),
+        'apuesta_promedio_historico': money(base['apuesta_promedio_historico'],base['apuesta_total_ultimo_mes']/n),
+        'meses_fuera_vip': list(range(1,min(5,8-n-r)+1)),
+        'ggr_promedio_historico': [v+d for d in (-200.,-100.,0.,100.,200.)],
+        'deposito_ultimo_mes': money(base['deposito_ultimo_mes']),
+    }
+
+def complete_quick_profile(kind,base,edited):
+    result=dict(base,**edited)
+    if kind=='reactivacion':
+        n=int(result['meses_vip_historicos'])
+        if base['reactivaciones_previas']==0:
+            result['racha_vip_previa']=n
+        # Keep previous month's deposit fixed; additional historical months use baseline average.
+        difference=result['deposito_ultimo_mes']-base['deposito_ultimo_mes']
+        result['delta_deposito_ultimo_mes']=base['delta_deposito_ultimo_mes']+difference
+        result['deposito_promedio_historico']=base['deposito_promedio_historico']+difference/n
+        # Two VIP months: average and last GGR determine the previous GGR.
+        if n==2 and result['ggr_promedio_historico']!=base['ggr_promedio_historico']:
+            result['delta_ggr_ultimo_mes']=2*(base['ggr_general_ultimo_mes']-result['ggr_promedio_historico'])
+    return result
 
 
 def reset_quick_profile(kind):
@@ -483,7 +520,7 @@ def profiles_page(kind,bundle):
     st.subheader('Explora cinco perfiles sintéticos')
     st.markdown('**'+probability_label(kind)+'**')
     st.caption(event_description(kind)+' Todas las estimaciones carecen de calibración demostrada.')
-    st.write('Empieza con un ejemplo completo y ficticio. Puedes cambiar algunos atributos principales sin completar todo el formulario. Los demás atributos conservan los valores del perfil elegido; todos participan en el cálculo.')
+    st.write('Empieza con un ejemplo completo y ficticio. Puedes cambiar algunos atributos principales sin completar todo el formulario. Todos los atributos participan en el cálculo. En reactivación, determinados atributos vinculados se ajustan para mantener la coherencia del historial.')
     profiles=synthetic_profiles(kind)
     results={name:predict(kind,bundle,values) for name,(_,values) in profiles.items()}
     items=list(profiles.items())
@@ -500,14 +537,35 @@ def profiles_page(kind,bundle):
     st.caption(description)
     st.button('Restablecer parámetros del perfil',key=f'reset_quick_{kind}',on_click=reset_quick_profile,args=(kind,))
     revision=st.session_state.get(f'quick_revision_{kind}',0)
+    st.caption('Cinco atributos destacados por importancia por permutación e interpretabilidad. La evidencia procede de las evaluaciones de los notebooks; no representa efectos causales.')
+    edited={}
     ranges=quick_ranges(kind,base)
-    edited=dict(base)
-    for col,(f,options) in zip(st.columns(len(ranges)),ranges.items()):
+    def choose(f,options,dependent_key=''):
+        options=sorted(set(options))
+        return st.selectbox(LABELS[f],options,index=options.index(base[f]) if base[f] in options else 0,
+            key=f'quick_{kind}_{revision}_{name}_{f}_{dependent_key}',format_func=lambda v:f'{v:g}')
+    fields=QUICK_FIELDS[kind]
+    for col,f in zip(st.columns(3),fields[:3]):
         with col:
-            # Native selectors preserve the original numeric units and restrict scenarios.
-            edited[f]=st.selectbox(LABELS[f],options,index=options.index(base[f]),
-                key=f'quick_{kind}_{revision}_{name}_{f}',format_func=lambda v:f'{v:g}')
-    st.caption(f'Parámetros editables: {len(ranges)} de {len(bundle["features"])}. Los {len(bundle["features"])-len(ranges)} restantes conservan el perfil de referencia. Los valores disponibles son escenarios ficticios acotados; para editar todo, usa Predicción manual.')
+            if kind=='reactivacion' and f!='meses_vip_historicos':
+                n=edited['meses_vip_historicos']
+                ranges=quick_ranges(kind,base,n)
+                edited[f]=choose(f,ranges[f],str(n))
+            else:
+                edited[f]=choose(f,ranges[f])
+    for col,f in zip(st.columns(2),fields[3:]):
+        with col:
+            edited[f]=choose(f,ranges[f])
+    edited=complete_quick_profile(kind,base,edited)
+    st.caption(f'Controles principales: 5 de {len(bundle["features"])}. Para editar todos los atributos, usa Predicción manual. Los valores disponibles son escenarios ficticios acotados.')
+    if kind=='reactivacion':
+        st.caption('Coherencia del historial: se ajustan automáticamente la racha VIP cuando no hay reingresos previos, el promedio y la variación de depósitos al editar el último depósito, y la variación de GGR si el historial tiene dos meses. Los demás atributos conservan el perfil de referencia.')
+        changed=[{'Atributo vinculado':LABELS[f],'Valor original':base[f],'Valor utilizado':edited[f]} for f in base if f not in fields and edited[f]!=base[f]]
+        if changed:
+            with st.expander('Consultar ajustes automáticos de coherencia'):
+                st.dataframe(pd.DataFrame(changed),hide_index=True,use_container_width=True)
+    else:
+        st.caption('Los 18 atributos restantes conservan el perfil de referencia.')
     try:
         current=predict(kind,bundle,edited)
     except ValueError as e:
